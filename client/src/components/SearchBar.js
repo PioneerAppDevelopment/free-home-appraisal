@@ -41,7 +41,7 @@ export default function SearchBar(props) {
     if (typeof window !== 'undefined' && !loaded.current) {
       // if (!document.querySelector('#google-maps')) {
       //   loadScript(
-      //     'https://maps.googleapis.com/maps/api/js?key=AIzaSyAWsjGBwu0-Z2FJT7gYJ0Z56XOJQyDG_jY&libraries=places',
+      //     `https://maps.googleapis.com/maps/api/js?key=${process.env.REACT_APP_GOOGLE_MAP_API_KEY}&libraries=places`,
       //     document.querySelector('head'),
       //     'google-maps',
       //   );

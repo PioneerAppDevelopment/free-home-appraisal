@@ -58,26 +58,22 @@ export default function UserLogin(props) {
 
  
   function handleSubmit(email, password) {
-    // console.log(email, password)
-    if(email === 'constantinec84@gmail.com') {
-      if(password === '123') {
-        setLoggedIn(true)
-        resetForm()
-        setOpen(false)
-        window.location.pathname = '/profile';
-      } else {
-        alert('Incorrect Password')
-      }
-    } else {
-      alert('Email does not exist. Please create an account')
-    }
+    // TODO: Replace this stub with a real authentication call.
+    // Options:
+    //   - Supabase: https://supabase.com/docs/guides/auth
+    //   - Firebase Auth: https://firebase.google.com/docs/auth
+    //   - Custom JWT endpoint on the backend
+    //
+    // On success: setLoggedIn(true), resetForm(), setOpen(false)
+    // Then redirect to '/profile' or wherever is appropriate.
+    alert('Authentication not yet implemented. See UserLogin.js for integration notes.');
   }
 
 
 
   return (
     <div id="user-container">
-      {loggedIn ? <h2 className="greeting">Welcome, Constantine</h2> : null}
+      {loggedIn ? <h2 className="greeting">Welcome, User</h2> : null}
       {loggedIn ? 
       <Button className="user-login" color="secondary" variant="contained" style={{marginLeft: 20}} onClick={signOut} endIcon={<UserIcon />}>Log Out</Button>
       :
