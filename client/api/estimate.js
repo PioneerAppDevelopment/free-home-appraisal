@@ -1,17 +1,5 @@
-const express = require("express");
-const path = require("path");
-const cors = require("cors");
-
-require("dotenv").config();
-
-const app = express();
-const port = process.env.PORT || 4000;
-const providerTimeoutMs = 9000;
-const realtyApiKey = process.env.REALTYAPI_KEY;
-
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const PROVIDER_TIMEOUT_MS = 9000;
+const REALTY_API_KEY = process.env.REALTYAPI_KEY;
 
 function fullAddress(query) {
   return [query.street, query.city, query.state, query.zip]
@@ -42,8 +30,8 @@ function firstString(...values) {
   return values.find(value => typeof value === "string" && value.trim()) || "";
 }
 
-function getPath(obj, targetPath) {
-  return targetPath.split(".").reduce((cursor, key) => {
+function getPath(obj, path) {
+  return path.split(".").reduce((cursor, key) => {
     if (cursor === null || cursor === undefined) {
       return undefined;
     }
@@ -51,16 +39,18 @@ function getPath(obj, targetPath) {
   }, obj);
 }
 
-async function fetchJson(url) {
+async function fetchJson(url, options = {}) {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), providerTimeoutMs);
+  const timeout = setTimeout(() => controller.abort(), options.timeout || PROVIDER_TIMEOUT_MS);
 
   try {
     const response = await fetch(url, {
+      ...options,
       signal: controller.signal,
       headers: {
         Accept: "application/json",
-        "x-realtyapi-key": realtyApiKey
+        "x-realtyapi-key": REALTY_API_KEY,
+        ...(options.headers || {})
       }
     });
 
@@ -68,7 +58,7 @@ async function fetchJson(url) {
     const body = bodyText ? JSON.parse(bodyText) : {};
 
     if (!response.ok) {
-      const message = body && (body.message || body.error) ? body.message || body.error : `HTTP ${response.status}`;
+      const message = body?.message || body?.error || `HTTP ${response.status}`;
       throw new Error(message);
     }
 
@@ -86,7 +76,7 @@ function providerError(error) {
 }
 
 async function callRealtyProvider(name, fn) {
-  if (!realtyApiKey) {
+  if (!REALTY_API_KEY) {
     return { ok: false, skipped: true, error: "Missing REALTYAPI_KEY" };
   }
 
@@ -99,8 +89,8 @@ async function callRealtyProvider(name, fn) {
 }
 
 function pickValue(raw, candidates) {
-  for (const pathCandidate of candidates) {
-    const value = firstNumber(getPath(raw, pathCandidate));
+  for (const path of candidates) {
+    const value = firstNumber(getPath(raw, path));
     if (value !== null) {
       return value;
     }
@@ -109,8 +99,8 @@ function pickValue(raw, candidates) {
 }
 
 function pickString(raw, candidates) {
-  for (const pathCandidate of candidates) {
-    const value = getPath(raw, pathCandidate);
+  for (const path of candidates) {
+    const value = getPath(raw, path);
     if (typeof value === "string" && value.trim()) {
       return value;
     }
@@ -123,7 +113,7 @@ function buildProperty(raw, mapping = {}) {
     bedrooms: pickValue(raw, mapping.bedrooms || ["bedrooms", "beds", "propertyDetails.bedrooms", "property.bedrooms", "data.bedrooms"]),
     bathrooms: pickValue(raw, mapping.bathrooms || ["bathrooms", "baths", "propertyDetails.bathrooms", "property.bathrooms", "data.bathrooms"]),
     sqft: pickValue(raw, mapping.sqft || ["livingArea", "sqft", "squareFeet", "propertyDetails.livingArea", "property.sqft", "data.sqft"]),
-    lotSize: pickValue(raw, mapping.lotSize || ["lotSize", "lotSizeSqFt", "lotAreaValue", "propertyDetails.lotSize", "property.lotSize", "data.lotSize"]),
+    lotSize: pickValue(raw, mapping.lotSize || ["lotSize", "lotSizeSqFt", "lotAreaValue", "propertyDetails.lotSize", "property.sqft", "data.lotSize"]),
     yearBuilt: pickValue(raw, mapping.yearBuilt || ["yearBuilt", "propertyDetails.yearBuilt", "property.yearBuilt", "data.yearBuilt"]),
     homeType: pickString(raw, mapping.homeType || ["homeType", "propertyType", "propertyDetails.homeType", "property.homeType", "data.propertyType"]),
     status: pickString(raw, mapping.status || ["homeStatus", "status", "propertyDetails.homeStatus", "property.status", "data.status"]),
@@ -145,9 +135,10 @@ async function getZillow(query) {
       link: pickString(raw, ["propertyDetails.hdpUrl", "propertyDetails.url", "zillowURL", "homeDetails"]),
       property: buildProperty(raw),
       meta: {
-        zpid: raw.propertyDetails && raw.propertyDetails.zpid ? raw.propertyDetails.zpid : raw.zpid || null,
+        zpid: raw.zpid || null,
         source: "RealtyAPI Zillow"
-      }
+      },
+      raw
     };
   });
 }
@@ -187,7 +178,8 @@ async function getRedfin(query) {
       }),
       meta: {
         source: "RealtyAPI Redfin"
-      }
+      },
+      raw
     };
   });
 }
@@ -227,16 +219,17 @@ async function getRealtor(query) {
       }),
       meta: {
         source: "RealtyAPI Realtor"
-      }
+      },
+      raw
     };
   });
 }
 
 function buildHomeFacts(query, providers) {
   const providerProperties = [
-    providers.zillow && providers.zillow.property,
-    providers.redfin && providers.redfin.property,
-    providers.realtor && providers.realtor.property
+    providers.zillow?.property,
+    providers.redfin?.property,
+    providers.realtor?.property
   ].filter(Boolean);
 
   const pick = key => {
@@ -268,9 +261,9 @@ function buildHomeFacts(query, providers) {
 
 function blendedEstimate(providers) {
   const values = [
-    providers.zillow && providers.zillow.value,
-    providers.redfin && providers.redfin.value,
-    providers.realtor && providers.realtor.value
+    providers.zillow?.value,
+    providers.redfin?.value,
+    providers.realtor?.value
   ].filter(value => Number.isFinite(value) && value > 0);
 
   if (!values.length) {
@@ -280,7 +273,13 @@ function blendedEstimate(providers) {
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
-app.get("/api/estimate", async (req, res) => {
+module.exports = async function handler(req, res) {
+  if (req.method !== "GET") {
+    res.setHeader("Allow", "GET");
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
   const query = {
     street: firstString(req.query.street),
     city: firstString(req.query.city),
@@ -331,15 +330,4 @@ app.get("/api/estimate", async (req, res) => {
       value: null
     }
   });
-});
-
-const buildPath = path.join(__dirname, "client/build");
-app.use(express.static(buildPath));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(buildPath, "index.html"));
-});
-
-app.listen(port, () => {
-  console.log(`Free Home Appraisal running on port ${port}`);
-});
+};

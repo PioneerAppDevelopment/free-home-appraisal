@@ -1,41 +1,7 @@
-// =============================================================
-// MOCK API SERVICE — Development / UI Preview Mode
-// =============================================================
-//
-// This file returns hardcoded data so the app can be run and
-// developed without any live API keys or a backend server.
-//
-// HOW TO USE FOR DEVELOPMENT:
-//   1. Edit the mock values below to simulate different properties.
-//   2. Run `npm start` in the client/ directory — no backend needed.
-//   3. The estimates UI, PDF export, and map will all work using
-//      whatever values you set here.
-//
-// HOW TO WIRE UP REAL DATA (when ready):
-//   Replace the return statement below with an actual HTTP call,
-//   for example:
-//
-//     const response = await fetch(
-//       `${process.env.REACT_APP_API_URL}/estimates/${street}/${city}/${state}/${zip}`
-//     );
-//     return response.json();
-//
-//   Or call your chosen BaaS (Supabase Edge Function, Firebase
-//   Cloud Function, etc.) from here. This is the ONLY file that
-//   needs to change to connect the frontend to real estimate data.
-//
-// SHAPE NOTE:
-//   The returned object must match the shape below. App.js reads:
-//     estimates.zillow.zestimate
-//     estimates.realtyMole.price / listingUrl
-//     estimates.melissa.Records[0].BuildingInfo.*
-//     estimates.melissa.Records[0].CurrentDeed.SalePrice
-// =============================================================
+const API_BASE_URL = process.env.REACT_APP_API_URL || "";
 
-const PropertyService = {
-  getEstimates: async (street, city, state, zip) => {
-    // --- MOCK DATA --- edit these values to test different scenarios ---
-    return {
+function mockEstimateResponse() {
+  return {
       melissa: {
         Records: [{
           BuildingInfo: {
@@ -61,7 +27,23 @@ const PropertyService = {
         listingUrl: 'https://www.realtymole.com/'
       }
     };
-    // --- END MOCK DATA ---
+}
+
+const PropertyService = {
+  getEstimates: async (street, city, state, zip) => {
+    if (process.env.REACT_APP_USE_MOCKS === "true") {
+      return mockEstimateResponse();
+    }
+
+    const params = new URLSearchParams({ street, city, state, zip });
+    const response = await fetch(`${API_BASE_URL}/api/estimate?${params}`);
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error || `Estimate request failed with ${response.status}`);
+    }
+
+    return response.json();
   }
 };
 

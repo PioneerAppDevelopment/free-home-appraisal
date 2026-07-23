@@ -103,6 +103,7 @@ export default class App extends Component {
     try {
       const [street, city, state, zip] = this.parseAddress(searchData.address);
       const estimates = await PropertyService.getEstimates(street, city, state, zip);
+      const homeFacts = estimates.home || {};
       
       this.setState(prevState => ({
         estimates: {
@@ -114,12 +115,21 @@ export default class App extends Component {
           },
           realtorEstimate: {
             ...prevState.estimates.realtorEstimate,
-            value: estimates.realtyMole?.price || null,
-            link: estimates.realtyMole?.listingUrl || ''
+            value: estimates.realtor?.value || null,
+            link: estimates.realtor?.link || ''
+          },
+          redfinEstimate: {
+            ...prevState.estimates.redfinEstimate,
+            value: estimates.redfin?.value || null,
+            link: estimates.redfin?.link || ''
           },
           melissaEstimate: {
             ...prevState.estimates.melissaEstimate,
-            value: estimates.melissa?.Records?.[0]?.CurrentDeed?.SalePrice || null
+            value: estimates.melissa?.value || estimates.melissa?.Records?.[0]?.CurrentDeed?.SalePrice || null
+          },
+          mashvisorEstimate: {
+            ...prevState.estimates.mashvisorEstimate,
+            value: estimates.mashvisor?.value || null
           },
           realtyMoleValue: {
             ...prevState.estimates.realtyMoleValue,
@@ -131,12 +141,16 @@ export default class App extends Component {
           city: city,
           state: state,
           zip_code: zip,
-          bedrooms: estimates.melissa?.Records?.[0]?.BuildingInfo?.TotalBedrooms || '3',
-          bathrooms: estimates.melissa?.Records?.[0]?.BuildingInfo?.TotalBathrooms || '2',
-          sqft: estimates.melissa?.Records?.[0]?.BuildingInfo?.TotalSquareFeet || '2,000',
-          year_built: estimates.melissa?.Records?.[0]?.BuildingInfo?.YearBuilt || '2000',
-          lat: searchData.lat,
-          long: searchData.long
+          home_type: homeFacts.home_type || '',
+          bedrooms: homeFacts.bedrooms || estimates.melissa?.Records?.[0]?.BuildingInfo?.TotalBedrooms || '3',
+          bathrooms: homeFacts.bathrooms || estimates.melissa?.Records?.[0]?.BuildingInfo?.TotalBathrooms || '2',
+          sqft: homeFacts.sqft || estimates.melissa?.Records?.[0]?.BuildingInfo?.TotalSquareFeet || '2,000',
+          lot_size: homeFacts.lot_size || '',
+          year_built: homeFacts.year_built || estimates.melissa?.Records?.[0]?.BuildingInfo?.YearBuilt || '2000',
+          sold_price: homeFacts.sold_price || estimates.melissa?.Records?.[0]?.CurrentDeed?.SalePrice || '',
+          sold_date: homeFacts.sold_date || estimates.melissa?.Records?.[0]?.CurrentDeed?.SaleDate || '',
+          lat: homeFacts.lat || searchData.lat,
+          long: homeFacts.long || searchData.long
         },
         loading: false,
         searchPerformed: true,
