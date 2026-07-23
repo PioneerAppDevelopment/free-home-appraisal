@@ -1,4 +1,5 @@
 const PROVIDER_TIMEOUT_MS = 9000;
+const PROVIDER_DELAY_MS = Number(process.env.REALTYAPI_PROVIDER_DELAY_MS || 400);
 const REALTY_API_KEY = process.env.REALTYAPI_KEY;
 
 function fullAddress(query) {
@@ -28,6 +29,10 @@ function firstNumber(...values) {
 
 function firstString(...values) {
   return values.find(value => typeof value === "string" && value.trim()) || "";
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 function getPath(obj, path) {
@@ -225,53 +230,11 @@ async function getRealtor(query) {
   });
 }
 
-async function getHomes(query) {
-  return callRealtyProvider("homes", async () => {
-    const params = new URLSearchParams({ address: fullAddress(query) });
-    const raw = await fetchJson(`https://homes.realtyapi.io/details/byaddress?${params}`);
-
-    return {
-      value: pickValue(raw, [
-        "detail.estimate.currentValue",
-        "detail.home.estimate",
-        "detail.list_price",
-        "detail.price",
-        "data.estimate.currentValue",
-        "data.home.estimate",
-        "data.list_price",
-        "data.price",
-        "property.price",
-        "list_price",
-        "price"
-      ]),
-      link: pickString(raw, ["detail.href", "detail.permalink", "data.href", "data.permalink", "href", "permalink", "url"]),
-      property: buildProperty(raw, {
-        bedrooms: ["detail.description.beds", "detail.details.beds", "data.description.beds", "description.beds", "beds"],
-        bathrooms: ["detail.description.baths", "detail.details.baths", "data.description.baths", "description.baths", "baths"],
-        sqft: ["detail.description.sqft", "detail.details.sqft", "data.description.sqft", "description.sqft", "sqft"],
-        lotSize: ["detail.description.lot_sqft", "detail.details.lot_sqft", "data.description.lot_sqft", "description.lot_sqft", "lot_sqft"],
-        yearBuilt: ["detail.description.year_built", "detail.details.year_built", "data.description.year_built", "description.year_built", "year_built"],
-        homeType: ["detail.description.type", "detail.details.type", "data.description.type", "description.type", "type"],
-        status: ["detail.status", "data.status", "status"],
-        soldPrice: ["detail.last_sold_price", "data.last_sold_price", "last_sold_price"],
-        soldDate: ["detail.last_sold_date", "data.last_sold_date", "last_sold_date"],
-        lat: ["detail.location.address.coordinate.lat", "data.location.address.coordinate.lat", "location.address.coordinate.lat", "lat"],
-        long: ["detail.location.address.coordinate.lon", "data.location.address.coordinate.lon", "location.address.coordinate.lon", "lon"]
-      }),
-      meta: {
-        source: "RealtyAPI Homes.com"
-      },
-      raw
-    };
-  });
-}
-
 function buildHomeFacts(query, providers) {
   const providerProperties = [
     providers.zillow?.property,
     providers.redfin?.property,
-    providers.realtor?.property,
-    providers.homes?.property
+    providers.realtor?.property
   ].filter(Boolean);
 
   const pick = key => {
@@ -305,8 +268,7 @@ function blendedEstimate(providers) {
   const values = [
     providers.zillow?.value,
     providers.redfin?.value,
-    providers.realtor?.value,
-    providers.homes?.value
+    providers.realtor?.value
   ].filter(value => Number.isFinite(value) && value > 0);
 
   if (!values.length) {
@@ -335,14 +297,13 @@ module.exports = async function handler(req, res) {
     return;
   }
 
-  const [zillow, redfin, realtor, homes] = await Promise.all([
-    getZillow(query),
-    getRedfin(query),
-    getRealtor(query),
-    getHomes(query)
-  ]);
+  const zillow = await getZillow(query);
+  await delay(PROVIDER_DELAY_MS);
+  const redfin = await getRedfin(query);
+  await delay(PROVIDER_DELAY_MS);
+  const realtor = await getRealtor(query);
 
-  const providers = { zillow, redfin, realtor, homes };
+  const providers = { zillow, redfin, realtor };
 
   res.status(200).json({
     address: query,
@@ -355,8 +316,8 @@ module.exports = async function handler(req, res) {
       homeDetails: zillow.link || ""
     },
     realtyMole: {
-      price: homes.value || null,
-      listingUrl: homes.link || ""
+      price: null,
+      listingUrl: ""
     },
     melissa: {
       value: null,
@@ -369,10 +330,6 @@ module.exports = async function handler(req, res) {
     realtor: {
       value: realtor.value || null,
       link: realtor.link || ""
-    },
-    homes: {
-      value: homes.value || null,
-      link: homes.link || ""
     },
     mashvisor: {
       value: null

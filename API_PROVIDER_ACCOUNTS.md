@@ -2,12 +2,17 @@
 
 The app now starts with a single provider account: RealtyAPI.
 
-`client/api/estimate.js` calls RealtyAPI from a server-side Vercel function and fans out to several RealtyAPI provider hosts:
+`client/api/estimate.js` calls RealtyAPI from a server-side function and fans out to separate RealtyAPI platform hosts in sequence:
 
 - Zillow: `https://zillow.realtyapi.io`
 - Redfin: `https://redfin.realtyapi.io`
 - Realtor.com: `https://realtor.realtyapi.io`
-- Homes.com: `https://homes.realtyapi.io`
+
+The default delay between platform calls is 400 ms. Override it with:
+
+```text
+REALTYAPI_PROVIDER_DELAY_MS=400
+```
 
 ## Required Key
 

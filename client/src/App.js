@@ -71,11 +71,12 @@ export default class App extends Component {
       },
       realtyMoleValue: {
         id: 6,
-        site_name: 'Homes.com',
-        img: './img/homes-fit.png',
+        site_name: 'Realty Mole',
+        img: './img/mole-fit.png',
         link: '',
         value: null,
-        active: true
+        active: false,
+        visible: false
       },
       dataTreeEstimate: {
         id: 7,
@@ -138,8 +139,8 @@ export default class App extends Component {
           },
           realtyMoleValue: {
             ...prevState.estimates.realtyMoleValue,
-            value: estimates.homes?.value || estimates.realtyMole?.price || null,
-            link: estimates.homes?.link || estimates.realtyMole?.listingUrl || ''
+            value: null,
+            link: ''
           }
         },
         foundHome: {
