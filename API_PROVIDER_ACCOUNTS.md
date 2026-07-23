@@ -7,6 +7,7 @@ The app now starts with a single provider account: RealtyAPI.
 - Zillow: `https://zillow.realtyapi.io`
 - Redfin: `https://redfin.realtyapi.io`
 - Realtor.com: `https://realtor.realtyapi.io`
+- Homes.com: `https://homes.realtyapi.io`
 
 The default delay between platform calls is 400 ms. Override it with:
 
