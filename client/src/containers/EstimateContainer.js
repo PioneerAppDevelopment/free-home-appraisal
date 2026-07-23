@@ -11,6 +11,7 @@ import Grid from "@mui/material/Grid";
 export default function EstimateContainer(props) {
     const estimateCards = Object.values(props.estimates)
         .filter(estimate => estimate.visible !== false)
+        .filter(estimate => typeof estimate.value === 'number' && estimate.value > 0)
         .map(estimate => (
             <EstimateCard
                 key={estimate.id}
@@ -23,7 +24,7 @@ export default function EstimateContainer(props) {
         <div>
         <h1>ESTIMATES</h1>
         <Grid container direction="row" justify="center" alignItems="center">
-            {estimateCards}
+            {estimateCards.length ? estimateCards : <p>No source estimates found for this address.</p>}
           </Grid>
         </div>
     )
