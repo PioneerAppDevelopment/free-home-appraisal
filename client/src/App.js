@@ -58,19 +58,22 @@ export default class App extends Component {
         img: './img/melissa-fit.png',
         link: '',
         value: null,
-        active: true
+        active: false,
+        visible: false
       },
       mashvisorEstimate: {
         id: 5,
         site_name: 'Mashvisor',
         img: './img/mash-fit.png',
         value: null,
-        active: true
+        active: false,
+        visible: false
       },
       realtyMoleValue: {
         id: 6,
-        site_name: 'Realty Mole',
-        img: './img/mole-fit.png',
+        site_name: 'Homes.com',
+        img: './img/homes-fit.png',
+        link: '',
         value: null,
         active: true
       },
@@ -79,14 +82,16 @@ export default class App extends Component {
         site_name: 'Data Tree',
         img: './img/datatree-fit.png',
         value: null,
-        active: true
+        active: false,
+        visible: false
       },
       estatedEstimate: {
         id: 8,
         site_name: 'Estated',
         img: './img/estated-fit.png',
         value: null,
-        active: true
+        active: false,
+        visible: false
       }
     },
     isLoggedIn: false,
@@ -133,7 +138,8 @@ export default class App extends Component {
           },
           realtyMoleValue: {
             ...prevState.estimates.realtyMoleValue,
-            value: estimates.realtyMole?.price || null
+            value: estimates.homes?.value || estimates.realtyMole?.price || null,
+            link: estimates.homes?.link || estimates.realtyMole?.listingUrl || ''
           }
         },
         foundHome: {
