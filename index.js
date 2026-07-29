@@ -125,8 +125,58 @@ function pickString(raw, candidates) {
   return "";
 }
 
+function normalized(value) {
+  return String(value || "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function stateZipFromUrl(url) {
+  const match = String(url || "").match(/_([A-Z]{2})_(\d{5})(?:_|$)/i);
+  if (!match) {
+    return null;
+  }
+
+  return {
+    state: match[1].toUpperCase(),
+    zip: match[2]
+  };
+}
+
+function validateProviderMatch(name, query, provider) {
+  const linkLocation = stateZipFromUrl(provider.link);
+  if (linkLocation && (linkLocation.state !== query.state || linkLocation.zip !== query.zip)) {
+    return {
+      ok: false,
+      error: `${name} returned a property in ${linkLocation.state} ${linkLocation.zip}, not ${query.state} ${query.zip}`
+    };
+  }
+
+  const property = provider.property || {};
+  if (property.state && normalized(property.state) !== normalized(query.state)) {
+    return {
+      ok: false,
+      error: `${name} returned a different state`
+    };
+  }
+
+  if (property.zip && String(property.zip).slice(0, 5) !== query.zip) {
+    return {
+      ok: false,
+      error: `${name} returned a different ZIP code`
+    };
+  }
+
+  return provider;
+}
+
 function buildProperty(raw, mapping = {}) {
   return {
+    street: pickString(raw, mapping.street || ["address.streetAddress", "propertyDetails.address.streetAddress", "property.address.streetAddress", "detail.location.address.line", "data.location.address.line"]),
+    city: pickString(raw, mapping.city || ["address.city", "propertyDetails.address.city", "property.city", "detail.location.address.city", "data.location.address.city"]),
+    state: pickString(raw, mapping.state || ["address.state", "propertyDetails.address.state", "property.state", "detail.location.address.state_code", "data.location.address.state_code"]),
+    zip: pickString(raw, mapping.zip || ["address.zipcode", "propertyDetails.address.zipcode", "property.zipcode", "detail.location.address.postal_code", "data.location.address.postal_code"]),
     bedrooms: pickValue(raw, mapping.bedrooms || ["bedrooms", "beds", "propertyDetails.bedrooms", "property.bedrooms", "data.bedrooms"]),
     bathrooms: pickValue(raw, mapping.bathrooms || ["bathrooms", "baths", "propertyDetails.bathrooms", "property.bathrooms", "data.bathrooms"]),
     sqft: pickValue(raw, mapping.sqft || ["livingArea", "sqft", "squareFeet", "propertyDetails.livingArea", "property.sqft", "data.sqft"]),
@@ -204,22 +254,19 @@ async function getRealtor(query) {
     const params = new URLSearchParams({ address: fullAddress(query) });
     const raw = await fetchJson(`https://realtor.realtyapi.io/details/byaddress?${params}`);
 
-    return {
+    const provider = {
       value: pickValue(raw, [
         "detail.estimate.currentValue",
         "detail.home.estimate",
-        "detail.list_price",
-        "detail.price",
         "data.estimate.currentValue",
-        "data.home.estimate",
-        "data.list_price",
-        "data.price",
-        "property.price",
-        "list_price",
-        "price"
+        "data.home.estimate"
       ]),
       link: pickString(raw, ["detail.href", "detail.permalink", "data.href", "data.permalink", "href", "permalink", "url"]),
       property: buildProperty(raw, {
+        street: ["detail.location.address.line", "data.location.address.line", "location.address.line"],
+        city: ["detail.location.address.city", "data.location.address.city", "location.address.city"],
+        state: ["detail.location.address.state_code", "data.location.address.state_code", "location.address.state_code"],
+        zip: ["detail.location.address.postal_code", "data.location.address.postal_code", "location.address.postal_code"],
         bedrooms: ["detail.description.beds", "detail.details.beds", "data.description.beds", "description.beds", "beds"],
         bathrooms: ["detail.description.baths", "detail.details.baths", "data.description.baths", "description.baths", "baths"],
         sqft: ["detail.description.sqft", "detail.details.sqft", "data.description.sqft", "description.sqft", "sqft"],
@@ -236,6 +283,8 @@ async function getRealtor(query) {
         source: "RealtyAPI Realtor"
       }
     };
+
+    return validateProviderMatch("Realtor.com", query, provider);
   });
 }
 
@@ -244,22 +293,19 @@ async function getHomes(query) {
     const params = new URLSearchParams({ address: fullAddress(query) });
     const raw = await fetchJson(`https://homes.realtyapi.io/details/byaddress?${params}`);
 
-    return {
+    const provider = {
       value: pickValue(raw, [
         "detail.estimate.currentValue",
         "detail.home.estimate",
-        "detail.list_price",
-        "detail.price",
         "data.estimate.currentValue",
-        "data.home.estimate",
-        "data.list_price",
-        "data.price",
-        "property.price",
-        "list_price",
-        "price"
+        "data.home.estimate"
       ]),
       link: pickString(raw, ["detail.href", "detail.permalink", "data.href", "data.permalink", "href", "permalink", "url"]),
       property: buildProperty(raw, {
+        street: ["detail.location.address.line", "data.location.address.line", "location.address.line"],
+        city: ["detail.location.address.city", "data.location.address.city", "location.address.city"],
+        state: ["detail.location.address.state_code", "data.location.address.state_code", "location.address.state_code"],
+        zip: ["detail.location.address.postal_code", "data.location.address.postal_code", "location.address.postal_code"],
         bedrooms: ["detail.description.beds", "detail.details.beds", "data.description.beds", "description.beds", "beds"],
         bathrooms: ["detail.description.baths", "detail.details.baths", "data.description.baths", "description.baths", "baths"],
         sqft: ["detail.description.sqft", "detail.details.sqft", "data.description.sqft", "description.sqft", "sqft"],
@@ -276,6 +322,8 @@ async function getHomes(query) {
         source: "RealtyAPI Homes.com"
       }
     };
+
+    return validateProviderMatch("Homes.com", query, provider);
   });
 }
 
@@ -296,6 +344,8 @@ function buildHomeFacts(query, providers) {
     return null;
   };
 
+  const sale = providerProperties.find(property => property.soldPrice && property.soldDate) || {};
+
   return {
     street_address: query.street,
     city: query.city,
@@ -307,8 +357,8 @@ function buildHomeFacts(query, providers) {
     sqft: pick("sqft"),
     lot_size: pick("lotSize"),
     year_built: pick("yearBuilt"),
-    sold_price: pick("soldPrice"),
-    sold_date: pick("soldDate"),
+    sold_price: sale.soldPrice || null,
+    sold_date: sale.soldDate || null,
     lat: pick("lat"),
     long: pick("long")
   };
