@@ -23,9 +23,10 @@ function normalizeCert(value) {
 
 function databaseConfig() {
   const sslCa = normalizeCert(process.env.DATABASE_CA_CERT || process.env.PG_CA_CERT || process.env.PGSSLROOTCERT);
+  const rejectUnauthorized = process.env.DATABASE_SSL_REJECT_UNAUTHORIZED === "true";
   const ssl = sslCa
-    ? { ca: sslCa, rejectUnauthorized: true }
-    : { rejectUnauthorized: false };
+    ? { ca: sslCa, rejectUnauthorized }
+    : { rejectUnauthorized };
 
   if (process.env.DATABASE_URL) {
     return {

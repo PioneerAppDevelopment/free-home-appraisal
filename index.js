@@ -447,5 +447,7 @@ initializeUsageTracking()
   })
   .catch(error => {
     console.error("Failed to initialize usage tracking:", error.message);
-    process.exit(1);
+    app.listen(port, () => {
+      console.log(`Free Home Appraisal running on port ${port} without initialized usage tracking`);
+    });
   });

@@ -42,9 +42,10 @@ PGDATABASE=defaultdb
 PGUSER=your_postgres_user
 PGPASSWORD=your_postgres_password
 DATABASE_CA_CERT="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+DATABASE_SSL_REJECT_UNAUTHORIZED=false
 ```
 
-`DATABASE_CA_CERT` can be either the certificate text with `\n` line breaks or a server-local file path to the CA certificate. If usage tracking must be temporarily disabled, set:
+`DATABASE_CA_CERT` can be either the certificate text with `\n` line breaks or a server-local file path to the CA certificate. `DATABASE_SSL_REJECT_UNAUTHORIZED=false` matches DigitalOcean's `sslmode=require` behavior and avoids startup failures from self-signed certificate chains. If usage tracking must be temporarily disabled, set:
 
 ```text
 USAGE_TRACKING_ENABLED=false
