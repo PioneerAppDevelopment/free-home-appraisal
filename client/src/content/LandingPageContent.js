@@ -11,7 +11,7 @@ const LandingPageContent = () => {
             purchase a new home? Or, maybe you just want to refinance while
             interest rates are low? Whatever the case, you will need a property
             appraisal to determine the value of the home or property in
-            question. At Accupraisal.com, we understand that estimating
+            question. At YouPraisal.com, we understand that estimating
             the price of a house or property can be a painful process and so we
             opted to make home appraisals free and easy to use. We calculate
             property prices using a highly-efficient proprietary algorithm that
@@ -22,8 +22,8 @@ const LandingPageContent = () => {
         </div>
         <div className="landing-info section-2">
           <div className="home-text-center">
-          <h2 style={{ fontSize: 40, color: 'white' }}>We are Accupraisal.</h2>
-          <p style={{ fontSize: 16, color: 'white' }}>Founded in 2019, Accupraisal is engineered and run by a small team looking to shake
+          <h2 style={{ fontSize: 40, color: 'white' }}>We are YouPraisal.</h2>
+          <p style={{ fontSize: 16, color: 'white' }}>Founded in 2019, YouPraisal is engineered and run by a small team looking to shake
             up the real estate estimation industry. We're passionate about providing our users with data to assist them in
             the sale or purchase of a home. This tool and future updates will be helpful to home buyers and real estate professionals 
             alike.</p>
@@ -33,10 +33,10 @@ const LandingPageContent = () => {
           <div className="home-text-right">
             <div className="split">
               <div>
-            <h2 style={{fontSize: 40}}>The future of Accupraisal.</h2>
+            <h2 style={{fontSize: 40}}>The future of YouPraisal.</h2>
             <p style={{ fontSize: 16 }}>This tool is in early phases of development. Please feel free to test out current features, and
             if you encounter any bugs or issues, contact us via the 'Contact' page with a description of what was encountered. Future plans
-            for Accupraisal include more estimation API's, user accounts with saved address/properties, and the ability to correct home data/upload new data
+            for YouPraisal include more estimation API's, user accounts with saved address/properties, and the ability to correct home data/upload new data
             and photos.</p>
               </div>
             <img src={mockup} style={{width: 400}} alt="" />

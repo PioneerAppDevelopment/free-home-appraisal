@@ -16,8 +16,8 @@ export default function FooterContainer() {
           <div>
         {/* <img
             className="logo-bottom"
-            src="img/Acculogo.png"
-            alt="FHA Logo"
+            src="img/YouPraisalLogo.svg"
+            alt="YouPraisal Logo"
             style={{ width: 200 }}
           /> */}
           <Logo />

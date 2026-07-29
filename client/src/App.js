@@ -453,7 +453,7 @@ export default class App extends Component {
         {this.state.isLoading || this.state.loading ?
           <div className="loading-screen">
             <img src={LoadingIcon} alt="" />
-            <h1>The Accupraisal algorithm is finding your home's value!</h1>
+            <h1>The YouPraisal algorithm is finding your home's value!</h1>
           </div> : null}
         <CssBaseline />
         <Routes>

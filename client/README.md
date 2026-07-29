@@ -1,4 +1,4 @@
-# AccuPraisal - Frontend React Application
+# YouPraisal - Frontend React Application
 
 A modern React application for real estate property appraisals using multiple data sources including Zillow, Melissa Data, and RealtyMole.
 
