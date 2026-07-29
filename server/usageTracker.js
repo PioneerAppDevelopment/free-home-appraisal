@@ -153,7 +153,110 @@ async function trackLookupUsage(ipAddress, query) {
   };
 }
 
+async function getUsageDashboard(month) {
+  const db = getPool();
+  if (!db) {
+    throw new Error("Database environment variables are missing.");
+  }
+
+  await initializeUsageTracking();
+
+  const lookupMonth = month && /^\d{4}-\d{2}$/.test(month)
+    ? `${month}-01`
+    : currentLookupMonth();
+
+  const [summaryResult, byIpResult, recentResult, locationResult] = await Promise.all([
+    db.query(
+      `
+        SELECT
+          COUNT(*)::int AS total_lookups,
+          COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
+          COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
+          COUNT(DISTINCT ip_address)::int AS unique_ips,
+          MIN(created_at) AS first_lookup_at,
+          MAX(created_at) AS last_lookup_at
+        FROM property_lookup_usage
+        WHERE lookup_month = $1::date
+      `,
+      [lookupMonth]
+    ),
+    db.query(
+      `
+        SELECT
+          ip_address::text AS ip_address,
+          COUNT(*)::int AS total_lookups,
+          COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
+          COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
+          MIN(created_at) AS first_lookup_at,
+          MAX(created_at) AS last_lookup_at,
+          (
+            ARRAY_AGG(
+              TRIM(CONCAT_WS(', ', NULLIF(street, ''), NULLIF(city, ''), NULLIF(state, ''), NULLIF(zip, '')))
+              ORDER BY created_at DESC
+            )
+          )[1] AS last_lookup_address
+        FROM property_lookup_usage
+        WHERE lookup_month = $1::date
+        GROUP BY ip_address
+        ORDER BY allowed_lookups DESC, total_lookups DESC, last_lookup_at DESC
+        LIMIT 100
+      `,
+      [lookupMonth]
+    ),
+    db.query(
+      `
+        SELECT
+          ip_address::text AS ip_address,
+          street,
+          city,
+          state,
+          zip,
+          allowed,
+          created_at
+        FROM property_lookup_usage
+        WHERE lookup_month = $1::date
+        ORDER BY created_at DESC
+        LIMIT 25
+      `,
+      [lookupMonth]
+    ),
+    db.query(
+      `
+        SELECT
+          city,
+          state,
+          zip,
+          COUNT(*)::int AS total_lookups,
+          COUNT(DISTINCT ip_address)::int AS unique_ips
+        FROM property_lookup_usage
+        WHERE lookup_month = $1::date
+        GROUP BY city, state, zip
+        ORDER BY total_lookups DESC, unique_ips DESC
+        LIMIT 10
+      `,
+      [lookupMonth]
+    )
+  ]);
+
+  const summary = summaryResult.rows[0];
+  const ipRows = byIpResult.rows.map(row => ({
+    ...row,
+    remaining: lookupLimit > 0 ? Math.max(lookupLimit - row.allowed_lookups, 0) : null,
+    over_limit: lookupLimit > 0 && row.allowed_lookups >= lookupLimit
+  }));
+
+  return {
+    month: lookupMonth.slice(0, 7),
+    limitPerIp: lookupLimit || null,
+    summary,
+    byIp: ipRows,
+    recentLookups: recentResult.rows,
+    topLocations: locationResult.rows
+  };
+}
+
 module.exports = {
   initializeUsageTracking,
+  getUsageDashboard,
   trackLookupUsage
 };

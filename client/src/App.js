@@ -20,6 +20,7 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import LoadingIcon from './assets/img/loading-icon.png';
 import PropertyService from './services/api';
+import AdminUsageDashboard from './containers/AdminUsageDashboard';
 
 export default class App extends Component {
   state = {
@@ -456,6 +457,7 @@ export default class App extends Component {
           </div> : null}
         <CssBaseline />
         <Routes>
+          <Route exact path="/admin" element={<AdminUsageDashboard />} />
           <Route exact path="/profile" element={<ProfilePage />} />
           <Route exact path="/signup" element={<SignUp />} />
           <Route exact path="/about" element={

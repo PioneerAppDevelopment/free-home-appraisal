@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
-const { initializeUsageTracking, trackLookupUsage } = require("./server/usageTracker");
+const { initializeUsageTracking, getUsageDashboard, trackLookupUsage } = require("./server/usageTracker");
 
 require("dotenv").config();
 
@@ -328,6 +328,32 @@ function blendedEstimate(providers) {
 
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
+
+function requireAdmin(req, res, next) {
+  const adminToken = process.env.ADMIN_DASHBOARD_TOKEN;
+  if (!adminToken) {
+    next();
+    return;
+  }
+
+  const providedToken = req.get("x-admin-token") || req.query.token;
+  if (providedToken !== adminToken) {
+    res.status(401).json({ error: "Admin token is required." });
+    return;
+  }
+
+  next();
+}
+
+app.get("/api/admin/usage", requireAdmin, async (req, res) => {
+  try {
+    const dashboard = await getUsageDashboard(req.query.month);
+    res.status(200).json(dashboard);
+  } catch (error) {
+    console.error("Admin usage dashboard failed:", error.message);
+    res.status(503).json({ error: "Usage dashboard is temporarily unavailable." });
+  }
+});
 
 app.get("/api/estimate", async (req, res) => {
   const query = {

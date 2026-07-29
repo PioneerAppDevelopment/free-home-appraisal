@@ -50,6 +50,18 @@ DATABASE_CA_CERT="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
 USAGE_TRACKING_ENABLED=false
 ```
 
+The admin usage dashboard is available at:
+
+```text
+/admin
+```
+
+For production, set an admin token so the dashboard API is not public:
+
+```text
+ADMIN_DASHBOARD_TOKEN=choose_a_long_private_value
+```
+
 ## Local Development
 
 For frontend-only UI work:
