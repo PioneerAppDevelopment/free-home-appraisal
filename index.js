@@ -10,6 +10,7 @@ const port = process.env.PORT || 4000;
 const providerTimeoutMs = 9000;
 const providerDelayMs = Number(process.env.REALTYAPI_PROVIDER_DELAY_MS || 400);
 const realtyApiKey = process.env.REALTYAPI_KEY;
+const attomApiKey = process.env.ATTOM_API_KEY;
 
 app.set("trust proxy", true);
 app.use(cors());
@@ -58,7 +59,7 @@ function getPath(obj, targetPath) {
   }, obj);
 }
 
-async function fetchJson(url) {
+async function fetchJson(url, headers = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), providerTimeoutMs);
 
@@ -67,7 +68,8 @@ async function fetchJson(url) {
       signal: controller.signal,
       headers: {
         Accept: "application/json",
-        "x-realtyapi-key": realtyApiKey
+        ...(realtyApiKey ? { "x-realtyapi-key": realtyApiKey } : {}),
+        ...headers
       }
     });
 
@@ -105,9 +107,32 @@ async function callRealtyProvider(name, fn) {
   }
 }
 
+async function callAttomProvider(fn) {
+  if (!attomApiKey) {
+    return { ok: false, skipped: true, error: "Missing ATTOM_API_KEY" };
+  }
+
+  try {
+    return { ok: true, ...(await fn()) };
+  } catch (error) {
+    console.warn("attom provider failed:", error.message);
+    return providerError(error);
+  }
+}
+
 function pickValue(raw, candidates) {
   for (const pathCandidate of candidates) {
     const value = firstNumber(getPath(raw, pathCandidate));
+    if (value !== null) {
+      return value;
+    }
+  }
+  return null;
+}
+
+function pickAnyNumber(raw, candidates) {
+  for (const pathCandidate of candidates) {
+    const value = asNumber(getPath(raw, pathCandidate));
     if (value !== null) {
       return value;
     }
@@ -186,9 +211,59 @@ function buildProperty(raw, mapping = {}) {
     status: pickString(raw, mapping.status || ["homeStatus", "status", "propertyDetails.homeStatus", "property.status", "data.status"]),
     soldPrice: pickValue(raw, mapping.soldPrice || ["lastSoldPrice", "lastSalePrice", "propertyDetails.lastSoldPrice", "property.lastSalePrice", "data.lastSalePrice"]),
     soldDate: pickString(raw, mapping.soldDate || ["lastSoldDate", "lastSaleDate", "propertyDetails.lastSoldDate", "property.lastSaleDate", "data.lastSaleDate"]),
-    lat: pickValue(raw, mapping.lat || ["latitude", "lat", "propertyDetails.latitude", "address.latitude", "property.latitude", "data.latitude"]),
-    long: pickValue(raw, mapping.long || ["longitude", "lng", "long", "propertyDetails.longitude", "address.longitude", "property.longitude", "data.longitude"])
+    lat: pickAnyNumber(raw, mapping.lat || ["latitude", "lat", "propertyDetails.latitude", "address.latitude", "property.latitude", "data.latitude"]),
+    long: pickAnyNumber(raw, mapping.long || ["longitude", "lng", "long", "propertyDetails.longitude", "address.longitude", "property.longitude", "data.longitude"])
   };
+}
+
+function firstAttomProperty(raw) {
+  return Array.isArray(raw.property) && raw.property.length ? raw.property[0] : {};
+}
+
+async function getAttom(query) {
+  return callAttomProvider(async () => {
+    const params = new URLSearchParams({
+      address1: query.street,
+      address2: [query.city, query.state, query.zip].filter(Boolean).join(", ")
+    });
+    const raw = await fetchJson(
+      `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail?${params}`,
+      { apikey: attomApiKey }
+    );
+    const propertyRaw = firstAttomProperty(raw);
+
+    const provider = {
+      value: pickValue(propertyRaw, ["avm.amount.value"]),
+      link: "",
+      property: buildProperty(propertyRaw, {
+        street: ["address.line1"],
+        city: ["address.locality"],
+        state: ["address.countrySubd"],
+        zip: ["address.postal1"],
+        bedrooms: ["building.rooms.beds"],
+        bathrooms: ["building.rooms.bathstotal", "building.rooms.bathscalc"],
+        sqft: ["building.size.livingsize", "building.size.universalsize", "building.size.bldgsize"],
+        lotSize: ["lot.lotsize2"],
+        yearBuilt: ["summary.yearbuilt"],
+        homeType: ["summary.propertyType", "summary.propclass"],
+        status: ["summary.absenteeInd"],
+        soldPrice: ["sale.amount.saleamt", "sale.amount.saleAmt"],
+        soldDate: ["sale.saleTransDate", "sale.salesearchdate"],
+        lat: ["location.latitude"],
+        long: ["location.longitude"]
+      }),
+      meta: {
+        source: "ATTOM AVM",
+        attomId: getPath(propertyRaw, "identifier.attomId") || raw.status && raw.status.attomId || null,
+        confidenceScore: pickValue(propertyRaw, ["avm.amount.scr"]),
+        low: pickValue(propertyRaw, ["avm.amount.low"]),
+        high: pickValue(propertyRaw, ["avm.amount.high"]),
+        valuationDate: pickString(propertyRaw, ["avm.eventDate"])
+      }
+    };
+
+    return validateProviderMatch("ATTOM", query, provider);
+  });
 }
 
 async function getZillow(query) {
@@ -332,7 +407,8 @@ function buildHomeFacts(query, providers) {
     providers.zillow && providers.zillow.property,
     providers.redfin && providers.redfin.property,
     providers.realtor && providers.realtor.property,
-    providers.homes && providers.homes.property
+    providers.homes && providers.homes.property,
+    providers.attom && providers.attom.property
   ].filter(Boolean);
 
   const pick = key => {
@@ -369,7 +445,8 @@ function blendedEstimate(providers) {
     providers.zillow && providers.zillow.value,
     providers.redfin && providers.redfin.value,
     providers.realtor && providers.realtor.value,
-    providers.homes && providers.homes.value
+    providers.homes && providers.homes.value,
+    providers.attom && providers.attom.value
   ].filter(value => Number.isFinite(value) && value > 0);
 
   if (!values.length) {
@@ -442,8 +519,10 @@ app.get("/api/estimate", async (req, res) => {
   const realtor = await getRealtor(query);
   await delay(providerDelayMs);
   const homes = await getHomes(query);
+  await delay(providerDelayMs);
+  const attom = await getAttom(query);
 
-  const providers = { zillow, redfin, realtor, homes };
+  const providers = { zillow, redfin, realtor, homes, attom };
 
   res.status(200).json({
     address: query,
@@ -474,6 +553,14 @@ app.get("/api/estimate", async (req, res) => {
     homes: {
       value: homes.value || null,
       link: homes.link || ""
+    },
+    attom: {
+      value: attom.value || null,
+      link: attom.link || "",
+      low: attom.meta && attom.meta.low || null,
+      high: attom.meta && attom.meta.high || null,
+      confidenceScore: attom.meta && attom.meta.confidenceScore || null,
+      valuationDate: attom.meta && attom.meta.valuationDate || ""
     },
     mashvisor: {
       value: null

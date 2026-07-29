@@ -9,6 +9,10 @@ The app now starts with a single provider account: RealtyAPI.
 - Realtor.com: `https://realtor.realtyapi.io`
 - Homes.com: `https://homes.realtyapi.io`
 
+ATTOM is also used as an AVM/property-record provider:
+
+- ATTOM AVM: `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail`
+
 The default delay between platform calls is 400 ms. Override it with:
 
 ```text
@@ -21,9 +25,10 @@ Add this value as a server-side project environment variable:
 
 ```text
 REALTYAPI_KEY=your_realtyapi_key_here
+ATTOM_API_KEY=your_attom_api_key_here
 ```
 
-Do not put this key in a `REACT_APP_*` variable. RealtyAPI keys must stay server-side.
+Do not put these keys in `REACT_APP_*` variables. Provider keys must stay server-side.
 
 ## Usage Tracking
 

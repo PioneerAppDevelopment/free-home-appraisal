@@ -93,6 +93,14 @@ export default class App extends Component {
         value: null,
         active: false,
         visible: false
+      },
+      attomEstimate: {
+        id: 9,
+        site_name: 'ATTOM',
+        img: './img/attom-fit.svg',
+        link: '',
+        value: null,
+        active: true
       }
     },
     isLoggedIn: false,
@@ -141,6 +149,11 @@ export default class App extends Component {
             ...prevState.estimates.realtyMoleValue,
             value: estimates.homes?.value || estimates.realtyMole?.price || null,
             link: estimates.homes?.link || estimates.realtyMole?.listingUrl || ''
+          },
+          attomEstimate: {
+            ...prevState.estimates.attomEstimate,
+            value: estimates.attom?.value || null,
+            link: estimates.attom?.link || ''
           }
         },
         foundHome: {
@@ -315,6 +328,16 @@ export default class App extends Component {
             }
           }
         })
+      } else if (id === 9) {
+        this.setState({
+          estimates: {
+            ...this.state.estimates,
+            attomEstimate: {
+              ...this.state.estimates.attomEstimate,
+              active: false
+            }
+          }
+        })
       }
 
       // const id = e.target.parentElement.parentElement.parentElement.parentElement.dataset.id;
@@ -402,6 +425,16 @@ export default class App extends Component {
             ...this.state.estimates,
             estatedEstimate: {
               ...this.state.estimates.estatedEstimate,
+              active: true
+            }
+          }
+        })
+      } else if (id === 9) {
+        this.setState({
+          estimates: {
+            ...this.state.estimates,
+            attomEstimate: {
+              ...this.state.estimates.attomEstimate,
               active: true
             }
           }

@@ -4,7 +4,7 @@ import Grid from '@mui/material/Grid';
 export default class FHAEstimate extends Component {
 
   getEstimates = (props) => {
-    const { zillowEstimate, realtorEstimate, redfinEstimate, melissaEstimate, mashvisorEstimate, realtyMoleValue, dataTreeEstimate, estatedEstimate} = this.props.estimates;
+    const { zillowEstimate, realtorEstimate, redfinEstimate, melissaEstimate, mashvisorEstimate, realtyMoleValue, dataTreeEstimate, estatedEstimate, attomEstimate} = this.props.estimates;
       // let final = [];
       // console.log(this.props.estimates)
       const zillow = zillowEstimate.active ? zillowEstimate.value : null;
@@ -15,7 +15,8 @@ export default class FHAEstimate extends Component {
       const realtyMole = realtyMoleValue.active ? realtyMoleValue.value : null;
       const dataTree = dataTreeEstimate.active ? dataTreeEstimate.value : null;
       const estated = estatedEstimate.active ? estatedEstimate.value : null;
-      let arr = [zillow, realtor, redfin, melissa, mashvisor, realtyMole, dataTree, estated];
+      const attom = attomEstimate.active ? attomEstimate.value : null;
+      let arr = [zillow, realtor, redfin, melissa, mashvisor, realtyMole, dataTree, estated, attom];
       let final = arr.filter(estimate => estimate !== null && typeof estimate == 'number');
       if (Math.round(final.reduce((a, b) => a + b, 0) / final.length)) {
         return Math.round(final.reduce((a, b) => a + b, 0) / final.length);

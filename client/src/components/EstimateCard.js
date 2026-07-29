@@ -54,9 +54,11 @@ export default function EstimateCard(props) {
           <Button size="small" color="primary" onClick={(e) => props.toggleEstimate(e, id)}>
             <small>Remove Listing</small>
           </Button>
-          <Button className="link-btn" size="small" color="primary" href={link} target="_blank">
-            <ExitToAppIcon />
-          </Button>
+          {link ? (
+            <Button className="link-btn" size="small" color="primary" href={link} target="_blank">
+              <ExitToAppIcon />
+            </Button>
+          ) : null}
         </CardActions>
       </Card>
     );
