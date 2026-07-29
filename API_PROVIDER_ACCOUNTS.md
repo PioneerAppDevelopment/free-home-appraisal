@@ -17,13 +17,38 @@ REALTYAPI_PROVIDER_DELAY_MS=400
 
 ## Required Key
 
-Add this value as a Vercel project environment variable:
+Add this value as a server-side project environment variable:
 
 ```text
 REALTYAPI_KEY=your_realtyapi_key_here
 ```
 
 Do not put this key in a `REACT_APP_*` variable. RealtyAPI keys must stay server-side.
+
+## Usage Tracking
+
+Property lookups are tracked by IP address in PostgreSQL before any paid provider calls are made. Set the monthly free lookup cap with:
+
+```text
+FREE_LOOKUP_LIMIT_PER_MONTH=10
+```
+
+Set these database values in DigitalOcean:
+
+```text
+PGHOST=your_postgres_host
+PGPORT=25060
+PGDATABASE=defaultdb
+PGUSER=your_postgres_user
+PGPASSWORD=your_postgres_password
+DATABASE_CA_CERT="-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"
+```
+
+`DATABASE_CA_CERT` can be either the certificate text with `\n` line breaks or a server-local file path to the CA certificate. If usage tracking must be temporarily disabled, set:
+
+```text
+USAGE_TRACKING_ENABLED=false
+```
 
 ## Local Development
 

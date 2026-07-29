@@ -1,6 +1,7 @@
 const PROVIDER_TIMEOUT_MS = 9000;
 const PROVIDER_DELAY_MS = Number(process.env.REALTYAPI_PROVIDER_DELAY_MS || 400);
 const REALTY_API_KEY = process.env.REALTYAPI_KEY;
+const { trackLookupUsage } = require("../../server/usageTracker");
 
 function fullAddress(query) {
   return [query.street, query.city, query.state, query.zip]
@@ -340,6 +341,29 @@ module.exports = async function handler(req, res) {
     return;
   }
 
+  const ipAddress = firstString(
+    req.headers["x-forwarded-for"] && req.headers["x-forwarded-for"].split(",")[0],
+    req.socket && req.socket.remoteAddress,
+    "0.0.0.0"
+  );
+
+  let usage;
+  try {
+    usage = await trackLookupUsage(ipAddress, query);
+  } catch (error) {
+    console.error("Usage tracking failed:", error.message);
+    res.status(503).json({ error: "Lookup usage tracking is temporarily unavailable. Please try again shortly." });
+    return;
+  }
+
+  if (!usage.allowed) {
+    res.status(429).json({
+      error: "Monthly free lookup limit reached for this IP address.",
+      usage
+    });
+    return;
+  }
+
   const zillow = await getZillow(query);
   await delay(PROVIDER_DELAY_MS);
   const redfin = await getRedfin(query);
@@ -382,6 +406,7 @@ module.exports = async function handler(req, res) {
     },
     mashvisor: {
       value: null
-    }
+    },
+    usage
   });
 };

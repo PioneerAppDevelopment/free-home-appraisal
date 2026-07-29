@@ -1,6 +1,7 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
+const { initializeUsageTracking, trackLookupUsage } = require("./server/usageTracker");
 
 require("dotenv").config();
 
@@ -10,6 +11,7 @@ const providerTimeoutMs = 9000;
 const providerDelayMs = Number(process.env.REALTYAPI_PROVIDER_DELAY_MS || 400);
 const realtyApiKey = process.env.REALTYAPI_KEY;
 
+app.set("trust proxy", true);
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -340,6 +342,23 @@ app.get("/api/estimate", async (req, res) => {
     return;
   }
 
+  let usage;
+  try {
+    usage = await trackLookupUsage(req.ip, query);
+  } catch (error) {
+    console.error("Usage tracking failed:", error.message);
+    res.status(503).json({ error: "Lookup usage tracking is temporarily unavailable. Please try again shortly." });
+    return;
+  }
+
+  if (!usage.allowed) {
+    res.status(429).json({
+      error: "Monthly free lookup limit reached for this IP address.",
+      usage
+    });
+    return;
+  }
+
   const zillow = await getZillow(query);
   await delay(providerDelayMs);
   const redfin = await getRedfin(query);
@@ -382,7 +401,8 @@ app.get("/api/estimate", async (req, res) => {
     },
     mashvisor: {
       value: null
-    }
+    },
+    usage
   });
 });
 
@@ -393,6 +413,13 @@ app.get("*", (req, res) => {
   res.sendFile(path.join(buildPath, "index.html"));
 });
 
-app.listen(port, () => {
-  console.log(`Free Home Appraisal running on port ${port}`);
-});
+initializeUsageTracking()
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`Free Home Appraisal running on port ${port}`);
+    });
+  })
+  .catch(error => {
+    console.error("Failed to initialize usage tracking:", error.message);
+    process.exit(1);
+  });
