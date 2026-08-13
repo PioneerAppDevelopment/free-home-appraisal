@@ -13,6 +13,10 @@ ATTOM is also used as an AVM/property-record provider:
 
 - ATTOM AVM: `https://api.gateway.attomdata.com/propertyapi/v1.0.0/attomavm/detail`
 
+RentCast is used as an AVM/comps provider:
+
+- RentCast value estimate: `https://api.rentcast.io/v1/avm/value`
+
 The default delay between platform calls is 400 ms. Override it with:
 
 ```text
@@ -26,6 +30,7 @@ Add this value as a server-side project environment variable:
 ```text
 REALTYAPI_KEY=your_realtyapi_key_here
 ATTOM_API_KEY=your_attom_api_key_here
+RENTCAST_API_KEY=your_rentcast_api_key_here
 ```
 
 Do not put these keys in `REACT_APP_*` variables. Provider keys must stay server-side.

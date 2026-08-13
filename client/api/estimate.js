@@ -2,6 +2,7 @@ const PROVIDER_TIMEOUT_MS = 9000;
 const PROVIDER_DELAY_MS = Number(process.env.REALTYAPI_PROVIDER_DELAY_MS || 400);
 const REALTY_API_KEY = process.env.REALTYAPI_KEY;
 const ATTOM_API_KEY = process.env.ATTOM_API_KEY;
+const RENTCAST_API_KEY = process.env.RENTCAST_API_KEY;
 const { trackLookupUsage } = require("../../server/usageTracker");
 
 function fullAddress(query) {
@@ -108,6 +109,19 @@ async function callAttomProvider(fn) {
   }
 }
 
+async function callRentCastProvider(fn) {
+  if (!RENTCAST_API_KEY) {
+    return { ok: false, skipped: true, error: "Missing RENTCAST_API_KEY" };
+  }
+
+  try {
+    return { ok: true, ...(await fn()) };
+  } catch (error) {
+    console.warn("rentcast provider failed:", error.message);
+    return providerError(error);
+  }
+}
+
 function pickValue(raw, candidates) {
   for (const path of candidates) {
     const value = firstNumber(getPath(raw, path));
@@ -136,6 +150,29 @@ function pickString(raw, candidates) {
     }
   }
   return "";
+}
+
+function pickIdentifier(raw, candidates) {
+  for (const path of candidates) {
+    const value = getPath(raw, path);
+    if (value !== null && value !== undefined && String(value).trim()) {
+      return String(value).trim();
+    }
+  }
+  return "";
+}
+
+function queryParamFromUrl(url, name) {
+  const value = String(url || "").match(new RegExp(`[?&]${name}=([^&]+)`));
+  return value ? decodeURIComponent(value[1]) : "";
+}
+
+function redfinUrl(url) {
+  if (!url) {
+    return "";
+  }
+
+  return String(url).startsWith("http") ? String(url) : `https://www.redfin.com${url}`;
 }
 
 function normalized(value) {
@@ -255,6 +292,48 @@ async function getAttom(query) {
   });
 }
 
+async function getRentCast(query) {
+  return callRentCastProvider(async () => {
+    const params = new URLSearchParams({
+      address: fullAddress(query),
+      compCount: "15",
+      lookupSubjectAttributes: "true"
+    });
+    const raw = await fetchJson(
+      `https://api.rentcast.io/v1/avm/value?${params}`,
+      { headers: { "X-Api-Key": RENTCAST_API_KEY } }
+    );
+
+    const provider = {
+      value: pickValue(raw, ["price"]),
+      link: "",
+      property: buildProperty(raw, {
+        street: ["subjectProperty.addressLine1", "subjectProperty.address", "addressLine1", "address"],
+        city: ["subjectProperty.city", "city"],
+        state: ["subjectProperty.state", "state"],
+        zip: ["subjectProperty.zipCode", "subjectProperty.zip", "zipCode", "zip"],
+        bedrooms: ["subjectProperty.bedrooms", "bedrooms"],
+        bathrooms: ["subjectProperty.bathrooms", "bathrooms"],
+        sqft: ["subjectProperty.squareFootage", "subjectProperty.livingArea", "squareFootage"],
+        lotSize: ["subjectProperty.lotSize", "subjectProperty.lotSquareFeet", "lotSize"],
+        yearBuilt: ["subjectProperty.yearBuilt", "yearBuilt"],
+        homeType: ["subjectProperty.propertyType", "propertyType"],
+        lat: ["subjectProperty.latitude", "latitude"],
+        long: ["subjectProperty.longitude", "longitude"]
+      }),
+      meta: {
+        source: "RentCast AVM",
+        low: pickValue(raw, ["priceRangeLow"]),
+        high: pickValue(raw, ["priceRangeHigh"]),
+        compCount: Array.isArray(raw.comparables) ? raw.comparables.length : null
+      },
+      raw
+    };
+
+    return validateProviderMatch("RentCast", query, provider);
+  });
+}
+
 async function getZillow(query) {
   return callRealtyProvider("zillow", async () => {
     const params = new URLSearchParams({ propertyaddress: fullAddress(query) });
@@ -274,44 +353,128 @@ async function getZillow(query) {
   });
 }
 
+function pickRedfinValue(raw) {
+  return pickValue(raw, [
+    "details.avm.predictedValue",
+    "details.avm.amount",
+    "details.avm.value",
+    "details.avm.estimate",
+    "details.aboveTheFold.priceInfo.amount",
+    "details.aboveTheFold.priceInfo.price",
+    "data.__root.avmInfo.predictedValue",
+    "data.avm.predictedValue",
+    "data.avm.amount",
+    "data.avm.value",
+    "data.avm.estimate",
+    "avm.predictedValue",
+    "avm.amount",
+    "avm.value",
+    "avm.estimate",
+    "predictedValue",
+    "redfinEstimate",
+    "property.redfinEstimate",
+    "property.price",
+    "price",
+    "data.price",
+    "value",
+    "estimate"
+  ]);
+}
+
+function buildRedfinProperty(raw) {
+  return buildProperty(raw, {
+    street: ["details.aboveTheFold.mainHouseInfo.propertyAddress.streetAddress", "details.aboveTheFold.address.streetAddress", "details.address.streetAddress", "property.address.streetAddress", "data.address.streetAddress"],
+    city: ["details.aboveTheFold.mainHouseInfo.propertyAddress.city", "details.aboveTheFold.address.city", "details.address.city", "property.address.city", "data.address.city"],
+    state: ["details.aboveTheFold.mainHouseInfo.propertyAddress.stateOrProvinceCode", "details.aboveTheFold.address.state", "details.address.state", "property.address.state", "data.address.state"],
+    zip: ["details.aboveTheFold.mainHouseInfo.propertyAddress.postalCode", "details.aboveTheFold.address.zipcode", "details.aboveTheFold.address.zip", "details.address.zipcode", "details.address.zip", "property.zipcode", "data.zipcode"],
+    bedrooms: ["details.aboveTheFold.mainHouseInfo.beds", "details.aboveTheFold.beds", "details.aboveTheFold.numBeds", "details.mainHouseInfoPanelInfo.beds", "data.__root.property.numBedrooms", "data.beds", "beds"],
+    bathrooms: ["details.aboveTheFold.mainHouseInfo.baths", "details.aboveTheFold.baths", "details.aboveTheFold.numBaths", "details.mainHouseInfoPanelInfo.baths", "data.__root.property.numBathrooms", "data.baths", "baths"],
+    sqft: ["details.aboveTheFold.mainHouseInfo.sqFt.value", "details.aboveTheFold.mainHouseInfo.sqft", "details.aboveTheFold.sqFt.value", "details.aboveTheFold.sqft", "details.mainHouseInfoPanelInfo.sqft", "data.__root.property.approxSqFt", "data.sqft", "sqft"],
+    lotSize: ["details.aboveTheFold.mainHouseInfo.lotSize.value", "details.aboveTheFold.lotSize.value", "details.aboveTheFold.lotSize", "data.__root.property.lotSqFt", "data.lotSize", "lotSize"],
+    yearBuilt: ["details.aboveTheFold.mainHouseInfo.yearBuilt", "details.aboveTheFold.yearBuilt", "details.mainHouseInfoPanelInfo.yearBuilt", "data.__root.property.yearBuilt", "data.yearBuilt", "yearBuilt"],
+    homeType: ["details.belowTheFold.publicRecordsInfo.basicInfo.propertyTypeName", "details.aboveTheFold.mainHouseInfo.propertyType", "details.aboveTheFold.propertyType", "details.mainHouseInfoPanelInfo.propertyType", "data.propertyType", "propertyType"],
+    status: ["details.aboveTheFold.mainHouseInfo.mlsStatusDisplay.displayValue", "details.aboveTheFold.status", "data.__root.property.mlsStatus", "data.status", "status"],
+    soldPrice: ["details.belowTheFold.propertyHistoryInfo.events.0.price", "data.__root.avmInfo.lastSoldPrice"],
+    lat: ["details.aboveTheFold.mainHouseInfo.latLong.latitude", "details.aboveTheFold.latLong.latitude", "details.aboveTheFold.latitude", "data.latitude", "latitude"],
+    long: ["details.aboveTheFold.mainHouseInfo.latLong.longitude", "details.aboveTheFold.latLong.longitude", "details.aboveTheFold.longitude", "data.longitude", "longitude"]
+  });
+}
+
+function redfinIdentifiers(raw) {
+  const estimateUrl = pickString(raw, [
+    "details.belowTheFold.propertyHistoryInfo.priceEstimates.priceHomeUrl"
+  ]);
+
+  return {
+    propertyId: pickIdentifier(raw, [
+      "details.aboveTheFold.propertyId",
+      "details.aboveTheFold.property_id",
+      "details.aboveTheFold.mainHouseInfo.propertyId",
+      "details.aboveTheFold.mainHouseInfo.property_id",
+      "details.propertyId",
+      "details.property_id",
+      "property.propertyId",
+      "property.property_id",
+      "data.propertyId",
+      "data.property_id",
+      "propertyId",
+      "property_id"
+    ]) || queryParamFromUrl(estimateUrl, "estPropertyId"),
+    listingId: pickIdentifier(raw, [
+      "details.aboveTheFold.listingId",
+      "details.aboveTheFold.listing_id",
+      "details.aboveTheFold.mainHouseInfo.listingId",
+      "details.aboveTheFold.mainHouseInfo.listing_id",
+      "details.listingId",
+      "details.listing_id",
+      "property.listingId",
+      "property.listing_id",
+      "data.listingId",
+      "data.listing_id",
+      "listingId",
+      "listing_id"
+    ])
+  };
+}
+
 async function getRedfin(query) {
   return callRealtyProvider("redfin", async () => {
     const params = new URLSearchParams({ property_address: fullAddress(query) });
     const raw = await fetchJson(`https://redfin.realtyapi.io/detailsbyaddress?${params}`);
+    const ids = redfinIdentifiers(raw);
 
-    return {
-      value: pickValue(raw, [
-        "details.avm.predictedValue",
-        "details.avm.amount",
-        "details.avm.value",
-        "details.avm.estimate",
-        "details.aboveTheFold.priceInfo.amount",
-        "details.aboveTheFold.priceInfo.price",
-        "avm.value",
-        "avm.estimate",
-        "redfinEstimate",
-        "property.redfinEstimate",
-        "property.price",
-        "price",
-        "data.price"
-      ]),
-      link: pickString(raw, ["details.aboveTheFold.url", "url", "property.url", "data.url"]),
-      property: buildProperty(raw, {
-        bedrooms: ["details.aboveTheFold.beds", "details.aboveTheFold.numBeds", "details.mainHouseInfoPanelInfo.beds"],
-        bathrooms: ["details.aboveTheFold.baths", "details.aboveTheFold.numBaths", "details.mainHouseInfoPanelInfo.baths"],
-        sqft: ["details.aboveTheFold.sqFt.value", "details.aboveTheFold.sqft", "details.mainHouseInfoPanelInfo.sqft"],
-        lotSize: ["details.aboveTheFold.lotSize.value", "details.aboveTheFold.lotSize"],
-        yearBuilt: ["details.aboveTheFold.yearBuilt", "details.mainHouseInfoPanelInfo.yearBuilt"],
-        homeType: ["details.aboveTheFold.propertyType", "details.mainHouseInfoPanelInfo.propertyType"],
-        status: ["details.aboveTheFold.status", "status"],
-        lat: ["details.aboveTheFold.latLong.latitude", "details.aboveTheFold.latitude"],
-        long: ["details.aboveTheFold.latLong.longitude", "details.aboveTheFold.longitude"]
-      }),
+    let value = pickRedfinValue(raw);
+    let avmRaw = null;
+
+    if (!value && ids.propertyId) {
+      await delay(PROVIDER_DELAY_MS);
+      const avmParams = new URLSearchParams({
+        property_id: ids.propertyId,
+        listing_id: ids.listingId || "0"
+      });
+      avmRaw = await fetchJson(`https://redfin.realtyapi.io/avm?${avmParams}`);
+      value = pickRedfinValue(avmRaw);
+    }
+
+    const provider = {
+      value,
+      link: redfinUrl(pickString(raw, [
+        "details.aboveTheFold.url",
+        "details.belowTheFold.propertyHistoryInfo.priceEstimates.priceHomeUrl",
+        "url",
+        "property.url",
+        "data.url"
+      ])),
+      property: buildRedfinProperty(raw),
       meta: {
-        source: "RealtyAPI Redfin"
+        source: avmRaw ? "RealtyAPI Redfin AVM" : "RealtyAPI Redfin",
+        propertyId: ids.propertyId || null,
+        listingId: ids.listingId || (avmRaw ? "0" : null)
       },
       raw
     };
+
+    return validateProviderMatch("Redfin", query, provider);
   });
 }
 
@@ -322,28 +485,38 @@ async function getRealtor(query) {
 
     const provider = {
       value: pickValue(raw, [
+        "detail.priceValue",
+        "detail.price",
+        "detail.listing.price",
+        "detail.listing.priceValue",
         "detail.estimate.currentValue",
         "detail.home.estimate",
+        "data.priceValue",
+        "data.price",
+        "data.listing.price",
+        "data.listing.priceValue",
         "data.estimate.currentValue",
-        "data.home.estimate"
+        "data.home.estimate",
+        "priceValue",
+        "price"
       ]),
-      link: pickString(raw, ["detail.href", "detail.permalink", "data.href", "data.permalink", "href", "permalink", "url"]),
+      link: pickString(raw, ["detail.url", "detail.href", "detail.permalink", "data.url", "data.href", "data.permalink", "url", "href", "permalink"]),
       property: buildProperty(raw, {
-        street: ["detail.location.address.line", "data.location.address.line", "location.address.line"],
-        city: ["detail.location.address.city", "data.location.address.city", "location.address.city"],
-        state: ["detail.location.address.state_code", "data.location.address.state_code", "location.address.state_code"],
-        zip: ["detail.location.address.postal_code", "data.location.address.postal_code", "location.address.postal_code"],
-        bedrooms: ["detail.description.beds", "detail.details.beds", "data.description.beds", "description.beds", "beds"],
-        bathrooms: ["detail.description.baths", "detail.details.baths", "data.description.baths", "description.baths", "baths"],
-        sqft: ["detail.description.sqft", "detail.details.sqft", "data.description.sqft", "description.sqft", "sqft"],
-        lotSize: ["detail.description.lot_sqft", "detail.details.lot_sqft", "data.description.lot_sqft", "description.lot_sqft", "lot_sqft"],
-        yearBuilt: ["detail.description.year_built", "detail.details.year_built", "data.description.year_built", "description.year_built", "year_built"],
-        homeType: ["detail.description.type", "detail.details.type", "data.description.type", "description.type", "type"],
-        status: ["detail.status", "data.status", "status"],
+        street: ["detail.address.street", "detail.address.full", "data.address.street", "detail.location.address.line", "data.location.address.line", "location.address.line"],
+        city: ["detail.address.city", "data.address.city", "detail.location.address.city", "data.location.address.city", "location.address.city"],
+        state: ["detail.address.state", "data.address.state", "detail.location.address.state_code", "data.location.address.state_code", "location.address.state_code"],
+        zip: ["detail.address.zipCode", "data.address.zipCode", "detail.location.address.postal_code", "data.location.address.postal_code", "location.address.postal_code"],
+        bedrooms: ["detail.beds", "detail.facts.beds", "detail.description.beds", "detail.details.beds", "data.beds", "data.facts.beds", "data.description.beds", "description.beds", "beds"],
+        bathrooms: ["detail.baths", "detail.facts.baths", "detail.description.baths", "detail.details.baths", "data.baths", "data.facts.baths", "data.description.baths", "description.baths", "baths"],
+        sqft: ["detail.squareFeet", "detail.facts.squareFeet", "detail.description.sqft", "detail.details.sqft", "data.squareFeet", "data.facts.squareFeet", "data.description.sqft", "description.sqft", "sqft"],
+        lotSize: ["detail.lotSquareFeet", "detail.facts.lotSquareFeet", "detail.description.lot_sqft", "detail.details.lot_sqft", "data.lotSquareFeet", "data.facts.lotSquareFeet", "data.description.lot_sqft", "description.lot_sqft", "lot_sqft"],
+        yearBuilt: ["detail.yearBuilt", "detail.facts.yearBuilt", "detail.description.year_built", "detail.details.year_built", "data.yearBuilt", "data.facts.yearBuilt", "data.description.year_built", "description.year_built", "year_built"],
+        homeType: ["detail.facts.propertyType", "detail.facts.propertySubType", "detail.description.type", "detail.details.type", "data.facts.propertyType", "data.description.type", "description.type", "type"],
+        status: ["detail.listing.status", "detail.status", "data.listing.status", "data.status", "status"],
         soldPrice: ["detail.last_sold_price", "data.last_sold_price", "last_sold_price"],
         soldDate: ["detail.last_sold_date", "data.last_sold_date", "last_sold_date"],
-        lat: ["detail.location.address.coordinate.lat", "data.location.address.coordinate.lat", "location.address.coordinate.lat", "lat"],
-        long: ["detail.location.address.coordinate.lon", "data.location.address.coordinate.lon", "location.address.coordinate.lon", "lon"]
+        lat: ["detail.address.latitude", "data.address.latitude", "detail.location.address.coordinate.lat", "data.location.address.coordinate.lat", "location.address.coordinate.lat", "lat"],
+        long: ["detail.address.longitude", "data.address.longitude", "detail.location.address.coordinate.lon", "data.location.address.coordinate.lon", "location.address.coordinate.lon", "lon"]
       }),
       meta: {
         source: "RealtyAPI Realtor"
@@ -401,7 +574,8 @@ function buildHomeFacts(query, providers) {
     providers.redfin?.property,
     providers.realtor?.property,
     providers.homes?.property,
-    providers.attom?.property
+    providers.attom?.property,
+    providers.rentcast?.property
   ].filter(Boolean);
 
   const pick = key => {
@@ -439,7 +613,8 @@ function blendedEstimate(providers) {
     providers.redfin?.value,
     providers.realtor?.value,
     providers.homes?.value,
-    providers.attom?.value
+    providers.attom?.value,
+    providers.rentcast?.value
   ].filter(value => Number.isFinite(value) && value > 0);
 
   if (!values.length) {
@@ -500,8 +675,10 @@ module.exports = async function handler(req, res) {
   const homes = await getHomes(query);
   await delay(PROVIDER_DELAY_MS);
   const attom = await getAttom(query);
+  await delay(PROVIDER_DELAY_MS);
+  const rentcast = await getRentCast(query);
 
-  const providers = { zillow, redfin, realtor, homes, attom };
+  const providers = { zillow, redfin, realtor, homes, attom, rentcast };
 
   res.status(200).json({
     address: query,
@@ -540,6 +717,13 @@ module.exports = async function handler(req, res) {
       high: attom.meta?.high || null,
       confidenceScore: attom.meta?.confidenceScore || null,
       valuationDate: attom.meta?.valuationDate || ""
+    },
+    rentcast: {
+      value: rentcast.value || null,
+      link: rentcast.link || "",
+      low: rentcast.meta?.low || null,
+      high: rentcast.meta?.high || null,
+      compCount: rentcast.meta?.compCount || null
     },
     mashvisor: {
       value: null

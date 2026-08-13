@@ -11,8 +11,7 @@ class Map extends Component {
   
   render() {
     return (
-      // Important! Always set the container height explicitly
-      <div style={{ height: "600px", width: "500px" }}>
+      <div className="property-map">
         <GoogleMapReact
           bootstrapURLKeys={{
             key: `${process.env.REACT_APP_GOOGLE_MAP_API_KEY}`

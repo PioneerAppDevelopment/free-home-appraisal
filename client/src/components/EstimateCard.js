@@ -1,5 +1,4 @@
 import React from "react";
-import { styled } from "@mui/material/styles";
 import Card from "@mui/material/Card";
 import CardActionArea from "@mui/material/CardActionArea";
 import CardActions from "@mui/material/CardActions";
@@ -10,18 +9,6 @@ import Typography from "@mui/material/Typography";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
 // import { CircularProgress } from "@mui/material";
 
-
-const useStyles = styled({
-  root: {
-    maxWidth: 200,
-    margin: 20
-  },
-  media: {
-    width: 200,
-    objectFit: 'fill'
-  }
-});
-
 function numberWithCommas(x) {
   if(x !== undefined) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -30,14 +17,13 @@ function numberWithCommas(x) {
 
 export default function EstimateCard(props) {
   const {id, site_name, value, img, link} = props.data;
-  const classes = useStyles();
 
     return (
-      <Card className={value ? classes.root : classes.root + ' disabled'} data-id={id}>
+      <Card className={value ? "estimate-card" : "estimate-card disabled"} data-id={id}>
         <CardActionArea>
           <CardMedia
             component="img"
-            className={classes.media}
+            className="estimate-card-media"
             image={img}
             title={`${site_name} Estimate`}
           />

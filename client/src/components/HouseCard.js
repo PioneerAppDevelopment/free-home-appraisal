@@ -1,5 +1,4 @@
 import React from 'react';
-import { styled } from '@mui/material/styles';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardActions from '@mui/material/CardActions';
@@ -13,19 +12,6 @@ import Map from './Map';
 
 // require('dotenv').config();
 
-const useStyles = styled({
-  card: {
-    maxWidth: 1000
-  },
-  media: {
-    width: 1000,
-    height: 540
-  },
-  strong: {
-    fontWeight: 'bold'
-  }
-});
-
 function numberWithCommas(x) {
   if (x !== undefined) {
     return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
@@ -35,17 +21,16 @@ function numberWithCommas(x) {
 const token = process.env.REACT_APP_GOOGLE_MAP_API_KEY;
 
 export default function HouseCard(props) {
-    const classes = useStyles();
     const { home_type, year_built, sqft, lot_size, total_rooms, bedrooms, bathrooms, street_address, city, state, zip_code, sold_price, sold_date, pool, fireplace, parking, garage, washerdryer, link_to, lat, long } = props.home
     const { propStatus, heating, cooling, description } = props.extraHomeData
     //  console.log(`https://maps.googleapis.com/maps/api/streetview?size=1200x1200&fov=60&location=${street_address.split(' ').join('+')},${city.split(' ').join('+')},${state.split(' ').join('+')}&key=${token}`)
     return (
       <div className="house-card">
-        <Card className={classes.card}>
+        <Card className="property-card">
           <CardActionArea>
             <CardMedia
               component="img"
-              className={classes.media}
+              className="property-card-media"
               image={`https://maps.googleapis.com/maps/api/streetview?size=1200x1200&fov=60&location=${street_address.split(' ').join('+')},${city.split(' ').join('+')},${state.split(' ').join('+')}&key=${token}`}
               title="House Info"
             />
@@ -73,26 +58,26 @@ export default function HouseCard(props) {
                       component="span"
                     >
                       <p>
-                        <strong className={classes.strong}>Home Type:</strong> {home_type || "N/A"}
+                        <strong>Home Type:</strong> {home_type || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Year Built:</strong> {year_built || "N/A"}
+                        <strong>Year Built:</strong> {year_built || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Size:</strong> {sqft ? numberWithCommas(sqft) + " /sqft" : "N/A"}
+                        <strong>Size:</strong> {sqft ? numberWithCommas(sqft) + " /sqft" : "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Lot Size:</strong>{" "}
+                        <strong>Lot Size:</strong>{" "}
                         {lot_size ? numberWithCommas(lot_size) + " /sqft" : "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Total Rooms:</strong> {total_rooms || "N/A"}
+                        <strong>Total Rooms:</strong> {total_rooms || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Bedrooms:</strong> {bedrooms || "N/A"}
+                        <strong>Bedrooms:</strong> {bedrooms || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Bathrooms:</strong> {bathrooms || "N/A"}
+                        <strong>Bathrooms:</strong> {bathrooms || "N/A"}
                       </p>
                     </Typography>
                     
@@ -105,14 +90,14 @@ export default function HouseCard(props) {
                       component="span"
                     >
                       <p>
-                        <strong className={classes.strong}>Last Sold Date:</strong> {sold_date || "N/A"}
+                        <strong>Last Sold Date:</strong> {sold_date || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Last Sold Price:</strong>{" "}
+                        <strong>Last Sold Price:</strong>{" "}
                         {sold_price ? "$" + numberWithCommas(sold_price) : "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Status:</strong>{" "}
+                        <strong>Status:</strong>{" "}
                         {propStatus || "N/A"}
                       </p>
                     </Typography>
@@ -123,25 +108,25 @@ export default function HouseCard(props) {
                       component="span"
                     >
                       <p>
-                        <strong className={classes.strong}>Garage:</strong> {garage || "N/A"}
+                        <strong>Garage:</strong> {garage || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Parking:</strong> {parking || "N/A"}
+                        <strong>Parking:</strong> {parking || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Heating:</strong> {heating || "N/A"}
+                        <strong>Heating:</strong> {heating || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Air Conditioning:</strong> {cooling || "N/A"}
+                        <strong>Air Conditioning:</strong> {cooling || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Pool:</strong> {pool || "N/A"}
+                        <strong>Pool:</strong> {pool || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Fireplace:</strong> {fireplace || "N/A"}
+                        <strong>Fireplace:</strong> {fireplace || "N/A"}
                       </p>
                       <p>
-                        <strong className={classes.strong}>Washer/Dryer:</strong> {washerdryer || "N/A"}
+                        <strong>Washer/Dryer:</strong> {washerdryer || "N/A"}
                       </p>
                     </Typography>
                   </div>

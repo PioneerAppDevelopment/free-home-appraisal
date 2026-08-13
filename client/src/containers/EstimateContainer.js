@@ -21,9 +21,9 @@ export default function EstimateContainer(props) {
         ));
 
     return (
-        <div>
+        <div className="estimate-results-panel">
         <h1>ESTIMATES</h1>
-        <Grid container direction="row" justify="center" alignItems="center">
+        <Grid container direction="row" justifyContent="center" alignItems="stretch" spacing={2}>
             {estimateCards.length ? estimateCards : <p>No source estimates found for this address.</p>}
           </Grid>
         </div>

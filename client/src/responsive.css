@@ -1,0 +1,403 @@
+* {
+    box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+.hero-header,
+.header,
+.main-menu {
+    width: 100%;
+}
+
+.main {
+    width: 100%;
+}
+
+.logo {
+    width: min(400px, 100%);
+    max-height: 120px;
+    object-fit: contain;
+}
+
+.places-search {
+    width: min(700px, 100%);
+    margin: 0 auto 20px;
+}
+
+#address-input {
+    width: 100%;
+    min-height: 50px;
+    border: 1px solid #b8c3cc;
+    border-radius: 6px;
+    padding: 0 16px;
+    font-size: 16px;
+}
+
+.property-card {
+    width: min(1000px, 100%);
+    overflow: hidden;
+}
+
+.property-card-media {
+    width: 100%;
+    height: clamp(240px, 54vw, 540px);
+    object-fit: cover;
+}
+
+.property-map {
+    width: min(500px, 100%);
+    height: 600px;
+    flex: 0 0 min(500px, 100%);
+}
+
+.estimate-results-panel {
+    width: 100%;
+    padding: 32px 0 10px;
+}
+
+.estimate-card {
+    width: min(220px, 100%);
+    height: 100%;
+    margin: 0 auto;
+}
+
+.estimate-card-media {
+    width: 100%;
+    height: 120px;
+    object-fit: contain;
+    padding: 14px;
+}
+
+.download-button {
+    margin: 8px;
+}
+
+.search-results img {
+    width: min(850px, 92vw);
+}
+
+.loading-screen {
+    left: 0;
+    padding: 24px;
+    text-align: center;
+}
+
+.loading-screen h1 {
+    max-width: 720px;
+    line-height: 1.2;
+}
+
+@media (max-width: 900px) {
+    .hero-header {
+        min-height: 640px;
+        height: auto;
+    }
+
+    .nav {
+        min-height: 560px;
+        height: auto;
+        margin-bottom: 48px;
+    }
+
+    .logo-container {
+        position: relative;
+        left: auto;
+        top: auto;
+        padding: 16px 20px 0;
+        text-align: center;
+    }
+
+    .main-menu {
+        position: relative;
+        top: auto;
+        right: auto;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        padding: 10px 16px 0;
+    }
+
+    .main-menu li a {
+        display: block;
+        padding: 8px 4px;
+        font-size: 1rem;
+    }
+
+    .left-window {
+        width: min(680px, calc(100% - 32px));
+        margin-top: 32px;
+        padding: 28px 22px;
+    }
+
+    .left-window h1 {
+        line-height: 1.15;
+    }
+
+    .left-window > div {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    #title {
+        padding: 48px 20px 24px;
+    }
+
+    .search-bar-container {
+        width: min(720px, calc(100vw - 32px));
+        height: auto;
+        min-height: 190px;
+        padding: 28px 22px;
+    }
+
+    .search-bar-container h1 {
+        line-height: 1.2;
+        margin: 0 0 18px;
+        padding-bottom: 0 !important;
+        font-size: 26px;
+    }
+
+    .main {
+        flex-direction: column;
+    }
+
+    .home-info {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 20px;
+        padding: 20px;
+    }
+
+    .home-info .left,
+    .home-info .right {
+        width: 50%;
+        margin: 0;
+    }
+
+    .property-map {
+        width: 100%;
+        height: 420px;
+        flex-basis: auto;
+    }
+
+    .section-1,
+    .split,
+    .footer,
+    .footer-bar,
+    .right-body {
+        flex-direction: column;
+    }
+
+    .landing-content-body {
+        margin-top: 0;
+    }
+
+    .landing-info {
+        height: auto;
+        min-height: 420px;
+        padding: 64px 24px;
+    }
+
+    .section-2 {
+        min-height: 560px;
+        height: auto;
+        clip-path: none;
+    }
+
+    .section-3 {
+        min-height: 560px;
+        height: auto;
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .home-text-left,
+    .home-text-center,
+    .home-text-right {
+        width: min(720px, 100%);
+        margin: 0;
+        text-align: left;
+    }
+
+    .split img {
+        width: min(320px, 80vw) !important;
+        margin-top: 28px;
+    }
+
+    .footer {
+        height: auto;
+        gap: 32px;
+        align-items: flex-start;
+        padding: 48px 24px 32px;
+    }
+
+    .widget,
+    .newsletter-widget {
+        width: 100% !important;
+        height: auto;
+        padding-top: 0;
+    }
+
+    .widget h1 {
+        font-size: 2.25rem !important;
+        line-height: 1.05;
+    }
+
+    .widget h2 {
+        line-height: 1.2;
+    }
+
+    .footer-bar {
+        gap: 20px;
+        align-items: flex-start;
+        padding: 0 24px 28px;
+    }
+
+    .footer-nav {
+        flex-wrap: wrap;
+        gap: 8px 16px;
+    }
+
+    .footer-nav p {
+        margin: 0;
+        padding: 0;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 26px;
+    }
+
+    .logo {
+        padding: 8px 12px;
+    }
+
+    .hero-header {
+        min-height: 620px;
+    }
+
+    .left-window {
+        width: calc(100% - 24px);
+        margin-top: 24px;
+        border-radius: 8px;
+    }
+
+    .left-window h1 {
+        font-size: 30px !important;
+    }
+
+    .search-bar-container {
+        width: calc(100vw - 24px);
+        padding: 22px 16px;
+    }
+
+    .search-bar-container h1 {
+        font-size: 22px;
+    }
+
+    #address-input {
+        min-height: 52px;
+    }
+
+    .house-card {
+        width: 100%;
+        padding: 8px 0;
+    }
+
+    .property-card {
+        border-radius: 0;
+    }
+
+    .property-card-media {
+        height: 240px;
+    }
+
+    .property-card h1 {
+        font-size: 25px !important;
+        line-height: 1.15;
+        padding-bottom: 12px !important;
+    }
+
+    .home-info {
+        flex-direction: column;
+        padding: 16px;
+    }
+
+    .home-info .left,
+    .home-info .right {
+        width: 100%;
+    }
+
+    .property-map {
+        height: 300px;
+    }
+
+    .house-actions {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .estimate-results-panel {
+        padding: 26px 12px 8px;
+    }
+
+    .estimate-card {
+        width: min(280px, calc(100vw - 48px));
+    }
+
+    .shimmer {
+        font-size: clamp(34px, 12vw, 80px) !important;
+        line-height: 1.1;
+        overflow-wrap: anywhere;
+    }
+
+    .download-section {
+        margin-bottom: 56px;
+    }
+
+    .landing-info {
+        padding: 52px 20px;
+    }
+
+    .home-text-left h2,
+    .home-text-center h2,
+    .home-text-right h2 {
+        font-size: 30px !important;
+        line-height: 1.15;
+    }
+
+    .footer {
+        padding: 40px 20px 28px;
+    }
+
+    #newsletter {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #newsletter > [type="email"],
+    #newsletter > [type="submit"] {
+        width: 100%;
+        border-radius: 5px;
+    }
+
+    .social-icons {
+        padding: 20px 0 0;
+    }
+}

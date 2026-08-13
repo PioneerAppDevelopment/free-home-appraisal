@@ -40,13 +40,12 @@ class Places extends Component {
 
     render() {
         return (
-            <div style={{ marginBottom: 20 }}>
+            <div className="places-search">
                 <input 
                     ref={this.placesRef} 
                     type="search" 
                     id="address-input" 
                     placeholder="Enter Address here!" 
-                    style={{ width: 800, maxWidth: 700, height: 50 }} 
                 />
             </div>
         )

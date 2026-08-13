@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './App.css';
+import './responsive.css';
 import 'typeface-roboto';
 import CssBaseline from '@mui/material/CssBaseline';
 import NavContainer from './containers/NavContainer';
@@ -70,7 +71,7 @@ export default class App extends Component {
         active: false,
         visible: false
       },
-      realtyMoleValue: {
+      homesEstimate: {
         id: 6,
         site_name: 'Homes.com',
         img: './img/homes-fit.png',
@@ -98,6 +99,14 @@ export default class App extends Component {
         id: 9,
         site_name: 'ATTOM',
         img: './img/attom-fit.svg',
+        link: '',
+        value: null,
+        active: true
+      },
+      rentcastEstimate: {
+        id: 10,
+        site_name: 'RentCast',
+        img: './img/rentcast-fit.svg',
         link: '',
         value: null,
         active: true
@@ -145,8 +154,8 @@ export default class App extends Component {
             ...prevState.estimates.mashvisorEstimate,
             value: estimates.mashvisor?.value || null
           },
-          realtyMoleValue: {
-            ...prevState.estimates.realtyMoleValue,
+          homesEstimate: {
+            ...prevState.estimates.homesEstimate,
             value: estimates.homes?.value || estimates.realtyMole?.price || null,
             link: estimates.homes?.link || estimates.realtyMole?.listingUrl || ''
           },
@@ -154,6 +163,11 @@ export default class App extends Component {
             ...prevState.estimates.attomEstimate,
             value: estimates.attom?.value || null,
             link: estimates.attom?.link || ''
+          },
+          rentcastEstimate: {
+            ...prevState.estimates.rentcastEstimate,
+            value: estimates.rentcast?.value || null,
+            link: estimates.rentcast?.link || ''
           }
         },
         foundHome: {
@@ -302,8 +316,8 @@ export default class App extends Component {
         this.setState({
           estimates: {
             ...this.state.estimates,
-            realtyMoleValue: {
-              ...this.state.estimates.realtyMoleValue,
+            homesEstimate: {
+              ...this.state.estimates.homesEstimate,
               active: false
             }
           }
@@ -334,6 +348,16 @@ export default class App extends Component {
             ...this.state.estimates,
             attomEstimate: {
               ...this.state.estimates.attomEstimate,
+              active: false
+            }
+          }
+        })
+      } else if (id === 10) {
+        this.setState({
+          estimates: {
+            ...this.state.estimates,
+            rentcastEstimate: {
+              ...this.state.estimates.rentcastEstimate,
               active: false
             }
           }
@@ -403,8 +427,8 @@ export default class App extends Component {
         this.setState({
           estimates: {
             ...this.state.estimates,
-            realtyMoleValue: {
-              ...this.state.estimates.realtyMoleValue,
+            homesEstimate: {
+              ...this.state.estimates.homesEstimate,
               active: true
             }
           }
@@ -435,6 +459,16 @@ export default class App extends Component {
             ...this.state.estimates,
             attomEstimate: {
               ...this.state.estimates.attomEstimate,
+              active: true
+            }
+          }
+        })
+      } else if (id === 10) {
+        this.setState({
+          estimates: {
+            ...this.state.estimates,
+            rentcastEstimate: {
+              ...this.state.estimates.rentcastEstimate,
               active: true
             }
           }
