@@ -45,8 +45,8 @@ img {
 }
 
 .property-card {
-    width: min(1000px, 100%);
-    overflow: hidden;
+    width: min(1100px, 100%);
+    overflow: visible;
 }
 
 .property-card-media {
@@ -56,9 +56,36 @@ img {
 }
 
 .property-map {
-    width: min(500px, 100%);
-    height: 600px;
-    flex: 0 0 min(500px, 100%);
+    width: 100%;
+    min-height: 520px;
+}
+
+.property-card .main {
+    display: grid;
+    grid-template-columns: minmax(320px, 500px) minmax(0, 1fr);
+    align-items: stretch;
+}
+
+.property-card .home-info {
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 24px;
+    overflow: visible;
+}
+
+.property-card .home-info .left,
+.property-card .home-info .right {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    margin: 0;
+}
+
+.property-card .home-info p {
+    margin: 0 0 10px;
+    overflow-wrap: anywhere;
 }
 
 .estimate-results-panel {
@@ -173,6 +200,11 @@ img {
         flex-direction: column;
     }
 
+    .property-card .main {
+        display: flex;
+        flex-direction: column;
+    }
+
     .home-info {
         width: 100%;
         justify-content: flex-start;
@@ -189,6 +221,7 @@ img {
     .property-map {
         width: 100%;
         height: 420px;
+        min-height: 420px;
         flex-basis: auto;
     }
 
@@ -344,6 +377,7 @@ img {
 
     .property-map {
         height: 300px;
+        min-height: 300px;
     }
 
     .house-actions {
