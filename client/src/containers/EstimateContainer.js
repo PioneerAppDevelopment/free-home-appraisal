@@ -3,12 +3,6 @@ import EstimateCard from '../components/EstimateCard';
 import Grid from "@mui/material/Grid";
 import { ESTIMATE_SOURCE_CONFIGS } from '../utils/estimateSources';
 
-// function renderEstimateCards(props) {
-//     return props.estimates.map(estimate => {
-//         return <EstimateCard key={estimate.id} data={estimate} toggleEstimate={props.toggleEstimate} />
-//     })
-// }
-
 export default function EstimateContainer(props) {
     const sourceStatuses = props.sourceStatuses && props.sourceStatuses.length
         ? props.sourceStatuses
@@ -29,7 +23,6 @@ export default function EstimateContainer(props) {
             <EstimateCard
                 key={estimate.id}
                 data={estimate}
-                toggleEstimate={props.toggleEstimate}
             />
         ));
 

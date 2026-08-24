@@ -16,7 +16,6 @@ export default function APIContainer(props) {
                 <EstimateContainer
                     estimates={props.estimates}
                     sourceStatuses={props.sourceStatuses}
-                    toggleEstimate={props.toggleEstimate}
                 />
                 <FHAEstimate estimates={props.estimates} />
                 <PDFButton savePage={props.savePage}/>

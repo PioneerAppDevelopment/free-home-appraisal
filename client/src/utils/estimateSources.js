@@ -40,10 +40,6 @@ export function sourceStatusForProvider(provider) {
     return 'Ready to connect';
   }
 
-  if (typeof provider.value === 'number' && provider.value > 0) {
-    return 'Included';
-  }
-
   return 'Checked';
 }
 

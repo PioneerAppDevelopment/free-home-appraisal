@@ -11,10 +11,7 @@ import './EstimateCard.css';
 // import { CircularProgress } from "@mui/material";
 
 export default function EstimateCard(props) {
-  const {id, site_name, img, link, sourceStatus} = props.data;
-  const statusClassName = sourceStatus === 'Included'
-    ? 'source-status-pill included'
-    : 'source-status-pill checked';
+  const {id, site_name, img, link} = props.data;
 
     return (
       <Card className="estimate-card" data-id={id}>
@@ -30,23 +27,20 @@ export default function EstimateCard(props) {
               {site_name}
           </Typography>
               <Typography gutterBottom variant="h6" component="h2">
-              {sourceStatus || 'Checked'}
+              Source Checked
               </Typography>  
-              <span className={statusClassName}>
-                {sourceStatus === 'Included' ? 'Estimate found' : 'Source checked'}
+              <span className="source-status-pill checked">
+                Source checked
               </span>
           </CardContent>
         </CardActionArea>
-        <CardActions>
-          <Button size="small" color="primary" onClick={(e) => props.toggleEstimate(e, id)}>
-            <small>Remove Source</small>
-          </Button>
-          {link ? (
+        {link ? (
+          <CardActions>
             <Button className="link-btn" size="small" color="primary" href={link} target="_blank">
               <ExitToAppIcon />
             </Button>
-          ) : null}
-        </CardActions>
+          </CardActions>
+        ) : null}
       </Card>
     );
 }
