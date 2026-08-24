@@ -1,0 +1,45 @@
+.estimate-results-summary {
+  margin: -10px auto 22px;
+  max-width: 680px;
+  color: #52697a;
+  font-size: 16px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.estimate-card {
+  border: 1px solid #d8e2eb;
+  box-shadow: 0 10px 28px rgba(15, 35, 52, 0.08);
+}
+
+.estimate-card .MuiCardContent-root {
+  text-align: center;
+}
+
+.estimate-card h2 {
+  margin-top: 6px;
+  color: #102334;
+  font-weight: 700;
+}
+
+.source-status-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.source-status-pill.included {
+  background: #e7f6ef;
+  color: #16704a;
+}
+
+.source-status-pill.checked {
+  background: #edf4f8;
+  color: #31576c;
+}

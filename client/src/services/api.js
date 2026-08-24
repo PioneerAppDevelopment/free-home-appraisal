@@ -25,6 +25,14 @@ function mockEstimateResponse() {
       realtyMole: {
         price: 510000,
         listingUrl: 'https://www.realtymole.com/'
+      },
+      providers: {
+        zillow: { ok: true, value: 525000 },
+        redfin: { ok: true, value: 518000 },
+        realtor: { ok: true, value: 522000 },
+        homes: { ok: true, value: 510000 },
+        attom: { ok: true, value: 515000 },
+        rentcast: { ok: true, value: 519000 }
       }
     };
 }

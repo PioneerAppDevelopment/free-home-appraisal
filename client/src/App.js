@@ -19,9 +19,10 @@ import SellMyHomeContent from './content/SellMyHomeContent';
 import LandingPageContent from './content/LandingPageContent';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
-import LoadingIcon from './assets/img/loading-icon.png';
 import PropertyService from './services/api';
 import AdminUsageDashboard from './containers/AdminUsageDashboard';
+import EstimateLoading from './components/EstimateLoading';
+import { buildSourceStatuses } from './utils/estimateSources';
 
 export default class App extends Component {
   state = {
@@ -118,11 +119,12 @@ export default class App extends Component {
     extraHomeData: {},
     loading: false,
     error: null,
-    searchPerformed: false
+    searchPerformed: false,
+    sourceStatuses: []
   };
 
   handleSearch = async (searchData) => {
-    this.setState({ loading: true });
+    this.setState({ loading: true, sourceStatuses: [] });
     try {
       const [street, city, state, zip] = this.parseAddress(searchData.address);
       const estimates = await PropertyService.getEstimates(street, city, state, zip);
@@ -188,6 +190,7 @@ export default class App extends Component {
         },
         loading: false,
         searchPerformed: true,
+        sourceStatuses: buildSourceStatuses(estimates),
         error: null
       }));
     } catch (error) {
@@ -256,8 +259,8 @@ export default class App extends Component {
   }
 
   toggleEstimate = (e, id, props) => {
-    if(e.target.innerText === 'REMOVE LISTING') {
-      e.target.innerText = "Add Listing";
+    if(e.target.innerText === 'REMOVE SOURCE') {
+      e.target.innerText = "Add Source";
       e.target.style.pointerEvents = 'all';
       e.target.style.cursor = 'pointer';
       e.target.style.color = 'red';
@@ -367,8 +370,8 @@ export default class App extends Component {
       // const id = e.target.parentElement.parentElement.parentElement.parentElement.dataset.id;
       // console.log(id)
       // this.deleteEstimate(id)
-    } else if(e.target.innerText === 'ADD LISTING') {
-      e.target.innerText = "Remove Listing";
+    } else if(e.target.innerText === 'ADD SOURCE') {
+      e.target.innerText = "Remove Source";
       e.target.style.pointerEvents = '';
       e.target.style.cursor = '';
       e.target.style.color = '';
@@ -518,10 +521,7 @@ export default class App extends Component {
     return (
       <div className="App">
         {this.state.isLoading || this.state.loading ?
-          <div className="loading-screen">
-            <img src={LoadingIcon} alt="" />
-            <h1>The YouPraisal algorithm is finding your home's value!</h1>
-          </div> : null}
+          <EstimateLoading /> : null}
         <CssBaseline />
         <Routes>
           <Route exact path="/admin" element={<AdminUsageDashboard />} />
@@ -573,6 +573,7 @@ export default class App extends Component {
                       home={this.state.foundHome}
                       extraHomeData={this.state.extraHomeData}
                       estimates={this.state.estimates}
+                      sourceStatuses={this.state.sourceStatuses}
                       toggleEstimate={this.toggleEstimate}
                       savePage={this.savePage}
                     />

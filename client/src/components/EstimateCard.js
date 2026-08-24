@@ -7,19 +7,17 @@ import CardMedia from "@mui/material/CardMedia";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
 import ExitToAppIcon from "@mui/icons-material/ExitToApp";
+import './EstimateCard.css';
 // import { CircularProgress } from "@mui/material";
 
-function numberWithCommas(x) {
-  if(x !== undefined) {
-    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-  }
-}
-
 export default function EstimateCard(props) {
-  const {id, site_name, value, img, link} = props.data;
+  const {id, site_name, img, link, sourceStatus} = props.data;
+  const statusClassName = sourceStatus === 'Included'
+    ? 'source-status-pill included'
+    : 'source-status-pill checked';
 
     return (
-      <Card className={value ? "estimate-card" : "estimate-card disabled"} data-id={id}>
+      <Card className="estimate-card" data-id={id}>
         <CardActionArea>
           <CardMedia
             component="img"
@@ -29,16 +27,19 @@ export default function EstimateCard(props) {
           />
           <CardContent>
             <Typography variant="body2" color="textSecondary" component="p">
-              {site_name} Estimate
+              {site_name}
           </Typography>
-              <Typography gutterBottom variant="h4" component="h2">
-              {value ? '$' + numberWithCommas(value) : 'Not Found'}
+              <Typography gutterBottom variant="h6" component="h2">
+              {sourceStatus || 'Checked'}
               </Typography>  
+              <span className={statusClassName}>
+                {sourceStatus === 'Included' ? 'Estimate found' : 'Source checked'}
+              </span>
           </CardContent>
         </CardActionArea>
         <CardActions>
           <Button size="small" color="primary" onClick={(e) => props.toggleEstimate(e, id)}>
-            <small>Remove Listing</small>
+            <small>Remove Source</small>
           </Button>
           {link ? (
             <Button className="link-btn" size="small" color="primary" href={link} target="_blank">
