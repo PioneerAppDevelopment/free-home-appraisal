@@ -30,9 +30,9 @@ p {
 }
 
 .hero-header {
-    height: 70vh;
+    height: 500px;
     width: 100vw;
-    background-image: url("./assets/img/landing.jpg");
+    background-image: url("./assets/img/FHA-header.jpg");
     margin: 0;
     padding: 0;
     background-position: center;
@@ -41,10 +41,6 @@ p {
 }
 
 .hero-overlay {
-    background: linear-gradient(-45deg, #ee765280, #e73c7e88, #23a5d585, #23d5ab83);
-    background-size: 400% 400%;
-    -webkit-animation: gradient-bg 15s ease infinite;
-    animation: gradient-bg 15s ease infinite;
     height: 100%;
 }
 
@@ -88,11 +84,6 @@ p {
 }
 
 .fade {
-    background: linear-gradient(231deg, #46be945b, #00d9ff59);
-    background-size: 200% 200%;
-    -webkit-animation: FooterSwell 6s ease infinite;
-    animation: FooterSwell 6s ease infinite;
-    background-size: cover;
     width: 100%;
     height: 100%;
 }
@@ -732,4 +723,3 @@ ul {
     background-position: top right;
   }
 }
-

@@ -295,6 +295,31 @@ export default class App extends Component {
     return !obj || Object.keys(obj).length === 0;
   };
 
+  renderEstimateTool = () => (
+    <>
+      <NavContainer
+        loggedin={this.state.isLoggedIn}
+        search={this.getSearchResults}
+      />
+      <div className="flex-wrapper">
+        <Element name="search-results">
+          {this.isEmpty(this.state.foundHome) ? (
+            <EmptySearchContainer isLoading={this.state.isLoading}/>
+          ) : (
+            <APIContainer
+              home={this.state.foundHome}
+              extraHomeData={this.state.extraHomeData}
+              estimates={this.state.estimates}
+              sourceStatuses={this.state.sourceStatuses}
+              savePage={this.savePage}
+            />
+          )}
+        </Element>
+        <Footer />
+      </div>
+    </>
+  );
+
   render() {
     return (
       <div className="App">
@@ -336,31 +361,7 @@ export default class App extends Component {
               </div>
             </>
           } />
-          <Route exact path="/estimates" element={
-            <>
-              <NavContainer
-                loggedin={this.state.isLoggedIn}
-                search={this.getSearchResults}
-              />
-              <div className="flex-wrapper">
-                <Element name="search-results">
-                  {this.isEmpty(this.state.foundHome) ? (
-                    <EmptySearchContainer isLoading={this.state.isLoading}/>
-                  ) : (
-                    <APIContainer
-                      home={this.state.foundHome}
-                      extraHomeData={this.state.extraHomeData}
-                      estimates={this.state.estimates}
-                      sourceStatuses={this.state.sourceStatuses}
-                      savePage={this.savePage}
-                    />
-                  )}
-                </Element>
-                <Footer />
-              </div>
-            </>
-          } />
-          <Route path="/" element={
+          <Route exact path="/learn-more" element={
             <>
               <LandingPageContainer
                 search={this.getSearchResults}
@@ -368,6 +369,10 @@ export default class App extends Component {
               <LandingPageContent />
               <Footer />
             </>
+          } />
+          <Route exact path="/estimates" element={this.renderEstimateTool()} />
+          <Route path="/" element={
+            this.renderEstimateTool()
           } />
         </Routes>
       </div>
