@@ -33,9 +33,9 @@ export default function LandingPageContainer(props) {
             </div>
             <NavMenu />
             <div className="left-window">
-              <h1 style={{ fontSize: 40, marginBottom: 0 }}>Get the most accurate estimates.</h1>
+              <h1 style={{ fontSize: 40, marginBottom: 0 }}>Get your free appraisal now.</h1>
               <p style={{ fontSize: 15, marginTop: 0 }}>Find your home's value fast. Click below to get started.</p>
-                <div><CTAButton variant="contained" color="primary" href="/">GET ESTIMATE NOW</CTAButton><CTAButton variant="contained" color="primary" href="#about">LEARN MORE</CTAButton></div>
+                <div><CTAButton variant="contained" color="primary" href="/">GET YOUR FREE APPRAISAL NOW</CTAButton></div>
             </div>
           </div>
           </div>

@@ -2,6 +2,7 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors");
 const { initializeUsageTracking, getUsageDashboard, trackLookupUsage, trackPageVisit } = require("./server/usageTracker");
+const { sendContactMessage } = require("./server/contactMailer");
 
 require("dotenv").config();
 
@@ -664,6 +665,19 @@ app.post("/api/page-visit", async (req, res) => {
   } catch (error) {
     console.error("Page visit tracking failed:", error.message);
     res.status(204).end();
+  }
+});
+
+app.post("/api/contact", async (req, res) => {
+  try {
+    await sendContactMessage(req.body);
+    res.status(200).json({ sent: true });
+  } catch (error) {
+    const statusCode = error.statusCode || 502;
+    if (statusCode >= 500) {
+      console.error("Contact form email failed:", error.message);
+    }
+    res.status(statusCode).json({ error: error.statusCode ? error.message : "Contact message could not be sent." });
   }
 });
 
