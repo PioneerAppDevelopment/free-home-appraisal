@@ -762,12 +762,12 @@ app.get("*", (req, res) => {
 initializeUsageTracking()
   .then(() => {
     app.listen(port, () => {
-      console.log(`Free Home Appraisal running on port ${port}`);
+      console.log(`FreeHomeAppraisal running on port ${port}`);
     });
   })
   .catch(error => {
     console.error("Failed to initialize usage tracking:", error.message);
     app.listen(port, () => {
-      console.log(`Free Home Appraisal running on port ${port} without initialized usage tracking`);
+      console.log(`FreeHomeAppraisal running on port ${port} without initialized usage tracking`);
     });
   });

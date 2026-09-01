@@ -31,7 +31,7 @@ function Copyright() {
         {"Copyright "}
         {new Date().getFullYear()}{" "}
         <Link color="inherit" href="/home">
-          Free Home Appraisal
+          FreeHomeAppraisal
         </Link>
         {". All Rights Reserved."}
       </Typography>
@@ -147,7 +147,7 @@ export default function Dashboard() {
                     <LinkTo to='/home'>
                     <Logo />  </LinkTo>
                     <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
-                        Free Home Appraisal Dashboard
+                        FreeHomeAppraisal Dashboard
           </Typography>
                     <IconButton color="inherit">
                         <Badge badgeContent={4} color="secondary">

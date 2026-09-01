@@ -77,7 +77,7 @@ export default function AdminUsageDashboard() {
     <main className="admin-dashboard">
       <section className="admin-hero">
         <div>
-          <p className="admin-kicker">Free Home Appraisal</p>
+          <p className="admin-kicker">FreeHomeAppraisal</p>
           <h1>Usage Dashboard</h1>
           <p className="admin-subtitle">
             Track lookup activity by IP address, monitor monthly quota pressure, and spot repeat usage patterns.

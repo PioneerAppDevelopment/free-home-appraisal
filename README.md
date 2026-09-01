@@ -1,9 +1,9 @@
 ﻿<p align="center">
-  <img src="client/public/img/YouPraisalLogo.svg" alt="YouPraisal Logo" width="600" />
+  <img src="client/public/img/FreeHomeAppraisalLogo.svg" alt="FreeHomeAppraisal Logo" width="600" />
 </p>
 
 
-YouPraisal (branded as **Free Home Appraisal** / FHA) is a full-stack web application that aggregates property value estimates from multiple third-party data sources and calculates a single blended estimate called the **"YouPraisal"**. Users enter a US home address, and the app fetches valuations from Zillow, Realtor, Redfin, Melissa Data, Realty Mole, Mashvisor, Data Tree, and Estated, then displays them side-by-side with a computed average.
+FreeHomeAppraisal (branded as **FreeHomeAppraisal** / FHA) is a full-stack web application that aggregates property value estimates from multiple third-party data sources and calculates a single blended estimate called the **"FreeHomeAppraisal"**. Users enter a US home address, and the app fetches valuations from Zillow, Realtor, Redfin, Melissa Data, Realty Mole, Mashvisor, Data Tree, and Estated, then displays them side-by-side with a computed average.
 
 ---
 
@@ -146,7 +146,7 @@ free-home-appraisal/
         │   ├── Map.js            # Google Map centered on the searched property
         │   ├── MapMarker.js      # Pin marker component for Map.js
         │   ├── EstimateCard.js   # Individual estimate card (one per data source)
-        │   ├── FHAEstimate.js    # Computes and displays the blended "YouPraisal" average
+        │   ├── FHAEstimate.js    # Computes and displays the blended "FreeHomeAppraisal" average
         │   ├── PDFButton.js      # Download PDF button
         │   ├── UserLogin.js      # Login modal with inline SignUp toggle
         │   ├── SignUp.js         # Sign-up form component (UI only)
@@ -470,7 +470,7 @@ Holds the central application state as a class component:
 Key methods:
 - `handleSearch(searchData)` — Parses address and calls the API service; populates state with results.
 - `parseAddress(address)` — Splits a formatted address string into `[street, city, state, zip]`.
-- `toggleEstimate(e, id)` — Marks individual estimate cards as active/inactive to include/exclude them from the YouPraisal average.
+- `toggleEstimate(e, id)` — Marks individual estimate cards as active/inactive to include/exclude them from the FreeHomeAppraisal average.
 - `savePage()` — Triggers PDF export of the `#print-area` div.
 - `getSearchResults(queryObj)` — Passed as a prop to search components; delegates to `handleSearch`.
 
@@ -492,7 +492,7 @@ Displays:
 
 Displays the logo, estimated value, and a "Remove Listing" toggle for each data source. A disabled CSS class is applied when `value` is null (not found).
 
-### `FHAEstimate.js` — Blended Estimate ("YouPraisal")
+### `FHAEstimate.js` — Blended Estimate ("FreeHomeAppraisal")
 
 Filters the estimates array to only `active` estimates with numeric values, then computes and displays the arithmetic mean. Shows "No Estimates Found" if no valid values exist.
 

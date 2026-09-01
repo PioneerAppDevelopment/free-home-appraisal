@@ -1,4 +1,4 @@
-# Free Home Appraisal API Key Setup
+# FreeHomeAppraisal API Key Setup
 
 This project is starting with one API provider account: RealtyAPI.
 

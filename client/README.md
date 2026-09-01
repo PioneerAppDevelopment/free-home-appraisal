@@ -1,4 +1,4 @@
-# YouPraisal - Frontend React Application
+# FreeHomeAppraisal - Frontend React Application
 
 A modern React application for real estate property appraisals using multiple data sources including Zillow, Melissa Data, and RealtyMole.
 

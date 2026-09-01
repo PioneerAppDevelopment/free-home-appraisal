@@ -19,7 +19,7 @@ function Copyright() {
       {"Copyright "}
       {new Date().getFullYear()}{" "}
       <Link color="inherit" href="/home">
-        Free Home Appraisal
+        FreeHomeAppraisal
       </Link>
       {". All Rights Reserved."}
     </Typography>

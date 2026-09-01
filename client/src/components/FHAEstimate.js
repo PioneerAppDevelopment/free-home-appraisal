@@ -34,7 +34,7 @@ export default class FHAEstimate extends Component {
         return (
           <Grid container direction="row" justify="center" alignItems="center">
             <Grid item xs={12}>
-              <h2>Your YouPraisal is</h2>
+              <h2>Your FreeHomeAppraisal is</h2>
               <h1 className="shimmer" style={{ fontSize: 80 }}>{this.getEstimates() === null ? "No Estimates Found" : '$' + this.numberWithCommas(this.getEstimates())}</h1>
             </Grid>
           </Grid>

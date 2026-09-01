@@ -11,7 +11,7 @@ export default function EstimateLoading() {
           <img src={LoadingIcon} alt="" />
           <div className="estimate-loading-spinner" aria-hidden="true" />
         </div>
-        <h1>Fetching your YouPraisal estimate</h1>
+        <h1>Fetching your FreeHomeAppraisal estimate</h1>
         <p>Checking available valuation sources for this property.</p>
         <div className="estimate-loading-sources" aria-label="Sources being checked">
           {ESTIMATE_SOURCE_CONFIGS.map(source => (
