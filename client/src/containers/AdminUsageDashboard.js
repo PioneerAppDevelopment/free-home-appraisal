@@ -65,6 +65,8 @@ export default function AdminUsageDashboard() {
   const allowedLookups = summary.allowed_lookups || 0;
   const blockedLookups = summary.blocked_lookups || 0;
   const uniqueIps = summary.unique_ips || 0;
+  const totalPageVisits = summary.total_page_visits || 0;
+  const uniquePageVisitIps = summary.unique_page_visit_ips || 0;
 
   const highestIp = useMemo(() => {
     if (!data?.byIp?.length) {
@@ -80,7 +82,7 @@ export default function AdminUsageDashboard() {
           <p className="admin-kicker">FreeHomeAppraisal</p>
           <h1>Usage Dashboard</h1>
           <p className="admin-subtitle">
-            Track lookup activity by IP address, monitor monthly quota pressure, and spot repeat usage patterns.
+            Track page visits and lookup activity by IP address, monitor monthly quota pressure, and spot repeat usage patterns.
           </p>
         </div>
         <div className="admin-controls">
@@ -105,17 +107,22 @@ export default function AdminUsageDashboard() {
 
       <section className="admin-metrics">
         <article>
-          <span>Total Lookups</span>
-          <strong>{formatNumber(totalLookups)}</strong>
-          <small>{formatNumber(uniqueIps)} unique IPs</small>
+          <span>Page Visits</span>
+          <strong>{formatNumber(totalPageVisits)}</strong>
+          <small>{formatNumber(uniquePageVisitIps)} unique IPs</small>
         </article>
         <article>
-          <span>Allowed</span>
+          <span>Total Lookups</span>
+          <strong>{formatNumber(totalLookups)}</strong>
+          <small>{formatNumber(uniqueIps)} unique lookup IPs</small>
+        </article>
+        <article>
+          <span>Allowed Lookups</span>
           <strong>{formatNumber(allowedLookups)}</strong>
           <small>{percent(allowedLookups, totalLookups)} of requests</small>
         </article>
         <article>
-          <span>Blocked</span>
+          <span>Blocked Lookups</span>
           <strong>{formatNumber(blockedLookups)}</strong>
           <small>{percent(blockedLookups, totalLookups)} over limit</small>
         </article>
@@ -131,37 +138,43 @@ export default function AdminUsageDashboard() {
           <h2>Usage by IP</h2>
           <p>
             {highestIp
-              ? `Top IP ${highestIp.ip_address} used ${formatNumber(highestIp.allowed_lookups)} allowed lookups this month.`
-              : 'No lookup activity for this month yet.'}
+              ? `Top IP ${highestIp.ip_address} recorded ${formatNumber(highestIp.page_visits)} page visits and ${formatNumber(highestIp.allowed_lookups)} allowed lookups this month.`
+              : 'No activity for this month yet.'}
           </p>
           <div className="admin-table-wrap">
             <table className="admin-table">
               <thead>
                 <tr>
                   <th>IP Address</th>
+                  <th>Page Visits</th>
                   <th>Allowed</th>
                   <th>Blocked</th>
                   <th>Total</th>
                   <th>Remaining</th>
+                  <th>Last Page</th>
+                  <th>Last Page Visit</th>
                   <th>Last Lookup</th>
                   <th>Last Address</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="7">Loading usage data...</td></tr>
+                  <tr><td colSpan="10">Loading usage data...</td></tr>
                 ) : data?.byIp?.length ? data.byIp.map(row => (
                   <tr key={row.ip_address} className={row.over_limit ? 'is-over-limit' : ''}>
                     <td>{row.ip_address}</td>
+                    <td>{formatNumber(row.page_visits)}</td>
                     <td>{formatNumber(row.allowed_lookups)}</td>
                     <td>{formatNumber(row.blocked_lookups)}</td>
                     <td>{formatNumber(row.total_lookups)}</td>
                     <td>{row.remaining === null ? 'N/A' : formatNumber(row.remaining)}</td>
+                    <td>{row.last_page_path || 'N/A'}</td>
+                    <td>{formatDate(row.last_page_visit_at)}</td>
                     <td>{formatDate(row.last_lookup_at)}</td>
                     <td>{row.last_lookup_address || 'N/A'}</td>
                   </tr>
                 )) : (
-                  <tr><td colSpan="7">No usage has been recorded for this month.</td></tr>
+                  <tr><td colSpan="10">No usage has been recorded for this month.</td></tr>
                 )}
               </tbody>
             </table>

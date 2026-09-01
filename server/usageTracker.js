@@ -91,6 +91,21 @@ async function initializeUsageTracking() {
       ON property_lookup_usage (ip_address, lookup_month, allowed)
   `);
 
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS page_visit_usage (
+      id BIGSERIAL PRIMARY KEY,
+      ip_address INET NOT NULL,
+      visit_month DATE NOT NULL,
+      path TEXT NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )
+  `);
+
+  await db.query(`
+    CREATE INDEX IF NOT EXISTS page_visit_usage_ip_month_idx
+      ON page_visit_usage (ip_address, visit_month)
+  `);
+
   initialized = true;
 }
 
@@ -99,12 +114,16 @@ function currentLookupMonth() {
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}-01`;
 }
 
-function isEnabled() {
-  return process.env.USAGE_TRACKING_ENABLED !== "false" && lookupLimit > 0;
+function isTrackingEnabled() {
+  return process.env.USAGE_TRACKING_ENABLED !== "false";
+}
+
+function isLookupLimitEnabled() {
+  return isTrackingEnabled() && lookupLimit > 0;
 }
 
 async function trackLookupUsage(ipAddress, query) {
-  if (!isEnabled()) {
+  if (!isLookupLimitEnabled()) {
     return {
       allowed: true,
       limit: lookupLimit || null,
@@ -154,6 +173,29 @@ async function trackLookupUsage(ipAddress, query) {
   };
 }
 
+async function trackPageVisit(ipAddress, path) {
+  if (!isTrackingEnabled()) {
+    return { trackingEnabled: false };
+  }
+
+  const db = getPool();
+  if (!db) {
+    throw new Error("Page visit tracking is enabled, but database environment variables are missing.");
+  }
+
+  await initializeUsageTracking();
+
+  await db.query(
+    `
+      INSERT INTO page_visit_usage (ip_address, visit_month, path)
+      VALUES ($1::inet, $2::date, $3)
+    `,
+    [ipAddress, currentLookupMonth(), path || "/"]
+  );
+
+  return { trackingEnabled: true };
+}
+
 async function getUsageDashboard(month) {
   const db = getPool();
   if (!db) {
@@ -169,37 +211,74 @@ async function getUsageDashboard(month) {
   const [summaryResult, byIpResult, recentResult, locationResult] = await Promise.all([
     db.query(
       `
-        SELECT
-          COUNT(*)::int AS total_lookups,
-          COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
-          COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
-          COUNT(DISTINCT ip_address)::int AS unique_ips,
-          MIN(created_at) AS first_lookup_at,
-          MAX(created_at) AS last_lookup_at
-        FROM property_lookup_usage
-        WHERE lookup_month = $1::date
+        SELECT *
+        FROM (
+          SELECT
+            COUNT(*)::int AS total_lookups,
+            COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
+            COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
+            COUNT(DISTINCT ip_address)::int AS unique_ips,
+            MIN(created_at) AS first_lookup_at,
+            MAX(created_at) AS last_lookup_at
+          FROM property_lookup_usage
+          WHERE lookup_month = $1::date
+        ) lookup_summary
+        CROSS JOIN (
+          SELECT
+            COUNT(*)::int AS total_page_visits,
+            COUNT(DISTINCT ip_address)::int AS unique_page_visit_ips,
+            MAX(created_at) AS last_page_visit_at
+          FROM page_visit_usage
+          WHERE visit_month = $1::date
+        ) visit_summary
       `,
       [lookupMonth]
     ),
     db.query(
       `
+        WITH lookup_by_ip AS (
+          SELECT
+            ip_address,
+            COUNT(*)::int AS total_lookups,
+            COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
+            COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
+            MIN(created_at) AS first_lookup_at,
+            MAX(created_at) AS last_lookup_at,
+            (
+              ARRAY_AGG(
+                TRIM(CONCAT_WS(', ', NULLIF(street, ''), NULLIF(city, ''), NULLIF(state, ''), NULLIF(zip, '')))
+                ORDER BY created_at DESC
+              )
+            )[1] AS last_lookup_address
+          FROM property_lookup_usage
+          WHERE lookup_month = $1::date
+          GROUP BY ip_address
+        ),
+        visits_by_ip AS (
+          SELECT
+            ip_address,
+            COUNT(*)::int AS page_visits,
+            MAX(created_at) AS last_page_visit_at,
+            (ARRAY_AGG(path ORDER BY created_at DESC))[1] AS last_page_path
+          FROM page_visit_usage
+          WHERE visit_month = $1::date
+          GROUP BY ip_address
+        )
         SELECT
-          ip_address::text AS ip_address,
-          COUNT(*)::int AS total_lookups,
-          COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
-          COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
-          MIN(created_at) AS first_lookup_at,
-          MAX(created_at) AS last_lookup_at,
-          (
-            ARRAY_AGG(
-              TRIM(CONCAT_WS(', ', NULLIF(street, ''), NULLIF(city, ''), NULLIF(state, ''), NULLIF(zip, '')))
-              ORDER BY created_at DESC
-            )
-          )[1] AS last_lookup_address
-        FROM property_lookup_usage
-        WHERE lookup_month = $1::date
-        GROUP BY ip_address
-        ORDER BY allowed_lookups DESC, total_lookups DESC, last_lookup_at DESC
+          COALESCE(lookup_by_ip.ip_address, visits_by_ip.ip_address)::text AS ip_address,
+          COALESCE(total_lookups, 0)::int AS total_lookups,
+          COALESCE(allowed_lookups, 0)::int AS allowed_lookups,
+          COALESCE(blocked_lookups, 0)::int AS blocked_lookups,
+          COALESCE(page_visits, 0)::int AS page_visits,
+          first_lookup_at,
+          last_lookup_at,
+          last_lookup_address,
+          last_page_visit_at,
+          last_page_path
+        FROM lookup_by_ip
+        FULL OUTER JOIN visits_by_ip
+          ON lookup_by_ip.ip_address = visits_by_ip.ip_address
+        ORDER BY page_visits DESC, allowed_lookups DESC, total_lookups DESC, last_page_visit_at DESC NULLS LAST
         LIMIT 100
       `,
       [lookupMonth]
@@ -259,5 +338,6 @@ async function getUsageDashboard(month) {
 module.exports = {
   initializeUsageTracking,
   getUsageDashboard,
-  trackLookupUsage
+  trackLookupUsage,
+  trackPageVisit
 };

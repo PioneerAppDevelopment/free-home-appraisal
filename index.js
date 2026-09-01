@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
-const { initializeUsageTracking, getUsageDashboard, trackLookupUsage } = require("./server/usageTracker");
+const { initializeUsageTracking, getUsageDashboard, trackLookupUsage, trackPageVisit } = require("./server/usageTracker");
 
 require("dotenv").config();
 
@@ -653,6 +653,17 @@ app.get("/api/admin/usage", requireAdmin, async (req, res) => {
   } catch (error) {
     console.error("Admin usage dashboard failed:", error.message);
     res.status(503).json({ error: "Usage dashboard is temporarily unavailable." });
+  }
+});
+
+app.post("/api/page-visit", async (req, res) => {
+  try {
+    const path = firstString(req.body && req.body.path) || "/";
+    await trackPageVisit(req.ip, path.slice(0, 500));
+    res.status(204).end();
+  } catch (error) {
+    console.error("Page visit tracking failed:", error.message);
+    res.status(204).end();
   }
 });
 

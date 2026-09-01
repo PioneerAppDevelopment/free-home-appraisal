@@ -22,6 +22,7 @@ import html2canvas from 'html2canvas';
 import PropertyService from './services/api';
 import AdminUsageDashboard from './containers/AdminUsageDashboard';
 import EstimateLoading from './components/EstimateLoading';
+import PageVisitTracker from './components/PageVisitTracker';
 import { buildSourceStatuses } from './utils/estimateSources';
 
 export default class App extends Component {
@@ -326,6 +327,7 @@ export default class App extends Component {
         {this.state.isLoading || this.state.loading ?
           <EstimateLoading /> : null}
         <CssBaseline />
+        <PageVisitTracker />
         <Routes>
           <Route exact path="/admin" element={<AdminUsageDashboard />} />
           <Route exact path="/profile" element={<ProfilePage />} />
