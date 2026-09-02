@@ -1,6 +1,5 @@
 import React from 'react';
 import LeftWidget from '../components/LeftWidget';
-import CenterWidget from '../components/CenterWidget';
 import Logo from '../components/Logo';
 // import RightWidget from '../components/RightWidget';
 
