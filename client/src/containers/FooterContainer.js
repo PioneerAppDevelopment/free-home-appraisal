@@ -9,14 +9,13 @@ export default function FooterContainer() {
       <div>
         <div className="footer">
           <LeftWidget />
-          <CenterWidget />
           {/* <RightWidget /> */}
         </div>
         <div className="footer-bar">
           <div>
         {/* <img
             className="logo-bottom"
-            src="img/FreeHomeAppraisalLogo.svg"
+            src="img/FreeHomeAppraisalLogo.png"
             alt="FreeHomeAppraisal Logo"
             style={{ width: 200 }}
           /> */}

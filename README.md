@@ -1,5 +1,5 @@
 ﻿<p align="center">
-  <img src="client/public/img/FreeHomeAppraisalLogo.svg" alt="FreeHomeAppraisal Logo" width="600" />
+  <img src="client/public/img/FreeHomeAppraisalLogo.png" alt="FreeHomeAppraisal Logo" width="600" />
 </p>
 
 
