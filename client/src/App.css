@@ -24,6 +24,14 @@ p {
     justify-content: space-between;
 }
 
+.empty-search-wrapper {
+    min-height: 0;
+}
+
+.empty-search-wrapper .search-results {
+    min-height: 0;
+}
+
 .App {
     text-align: center;
 }
@@ -160,6 +168,19 @@ h1 {
 
 .house-card {
     padding: 10px;
+}
+
+.back-to-search-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 0 0 20px;
+}
+
+.back-to-search-button {
+    font-family: Georgia, "Times New Roman", serif !important;
+    font-weight: 700 !important;
+    letter-spacing: 0 !important;
+    text-transform: none !important;
 }
 
 #address-input {

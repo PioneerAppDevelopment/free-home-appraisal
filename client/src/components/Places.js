@@ -36,6 +36,38 @@ class Places extends Component {
         } catch (error) {
             console.error('Error initializing Google Places:', error);
         }
+
+        this.keepInputEnabled();
+    }
+
+    keepInputEnabled = () => {
+        window.setTimeout(() => {
+            const input = this.placesRef.current;
+
+            if (input?.disabled) {
+                input.disabled = false;
+                input.removeAttribute('disabled');
+            }
+        }, 250);
+    }
+
+    handleKeyDown = (event) => {
+        if (event.key !== 'Enter') {
+            return;
+        }
+
+        event.preventDefault();
+        const address = this.placesRef.current?.value?.trim();
+
+        if (!address) {
+            return;
+        }
+
+        this.props.search({
+            address,
+            lat: 40.7128,
+            long: -74.0060
+        });
     }
 
     render() {
@@ -46,6 +78,7 @@ class Places extends Component {
                     type="search" 
                     id="address-input" 
                     placeholder="Enter your address"
+                    onKeyDown={this.handleKeyDown}
                 />
             </div>
         )

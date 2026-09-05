@@ -25,95 +25,97 @@ import EstimateLoading from './components/EstimateLoading';
 import PageVisitTracker from './components/PageVisitTracker';
 import { buildSourceStatuses } from './utils/estimateSources';
 
+const getInitialEstimates = () => ({
+  zillowEstimate: {
+    id: 1,
+    site_name: 'Zillow',
+    img: './img/zillow-fit.png',
+    link: '',
+    value: null,
+    active: true
+  },
+  realtorEstimate: {
+    id: 2,
+    site_name: 'Realtor',
+    img: './img/realtor-fit.png',
+    listing_id: '',
+    link: '',
+    value: null,
+    active: true
+  },
+  redfinEstimate: {
+    id: 3,
+    site_name: 'Redfin',
+    img: './img/redfin-fit.png',
+    listing_id: '',
+    link: '',
+    value: null,
+    active: true
+  },
+  melissaEstimate: {
+    id: 4,
+    site_name: 'Melissa',
+    img: './img/melissa-fit.png',
+    link: '',
+    value: null,
+    active: false,
+    visible: false
+  },
+  mashvisorEstimate: {
+    id: 5,
+    site_name: 'Mashvisor',
+    img: './img/mash-fit.png',
+    value: null,
+    active: false,
+    visible: false
+  },
+  homesEstimate: {
+    id: 6,
+    site_name: 'Homes.com',
+    img: './img/homes-fit.png',
+    link: '',
+    value: null,
+    active: true
+  },
+  dataTreeEstimate: {
+    id: 7,
+    site_name: 'Data Tree',
+    img: './img/datatree-fit.png',
+    value: null,
+    active: false,
+    visible: false
+  },
+  estatedEstimate: {
+    id: 8,
+    site_name: 'Estated',
+    img: './img/estated-fit.png',
+    value: null,
+    active: false,
+    visible: false
+  },
+  attomEstimate: {
+    id: 9,
+    site_name: 'ATTOM',
+    img: './img/attom-fit.svg',
+    link: '',
+    value: null,
+    active: true
+  },
+  rentcastEstimate: {
+    id: 10,
+    site_name: 'RentCast',
+    img: './img/rentcast-fit.svg',
+    link: '',
+    value: null,
+    active: true
+  }
+});
+
 export default class App extends Component {
   state = {
     allHomes: [],
     foundHome: {},
-    estimates: {
-      zillowEstimate: {
-        id: 1,
-        site_name: 'Zillow',
-        img: './img/zillow-fit.png',
-        link: '',
-        value: null,
-        active: true
-      },
-      realtorEstimate: {
-        id: 2,
-        site_name: 'Realtor',
-        img: './img/realtor-fit.png',
-        listing_id: '',
-        link: '',
-        value: null,
-        active: true
-      },
-      redfinEstimate: {
-        id: 3,
-        site_name: 'Redfin',
-        img: './img/redfin-fit.png',
-        listing_id: '',
-        link: '',
-        value: null,
-        active: true
-      },
-      melissaEstimate: {
-        id: 4,
-        site_name: 'Melissa',
-        img: './img/melissa-fit.png',
-        link: '',
-        value: null,
-        active: false,
-        visible: false
-      },
-      mashvisorEstimate: {
-        id: 5,
-        site_name: 'Mashvisor',
-        img: './img/mash-fit.png',
-        value: null,
-        active: false,
-        visible: false
-      },
-      homesEstimate: {
-        id: 6,
-        site_name: 'Homes.com',
-        img: './img/homes-fit.png',
-        link: '',
-        value: null,
-        active: true
-      },
-      dataTreeEstimate: {
-        id: 7,
-        site_name: 'Data Tree',
-        img: './img/datatree-fit.png',
-        value: null,
-        active: false,
-        visible: false
-      },
-      estatedEstimate: {
-        id: 8,
-        site_name: 'Estated',
-        img: './img/estated-fit.png',
-        value: null,
-        active: false,
-        visible: false
-      },
-      attomEstimate: {
-        id: 9,
-        site_name: 'ATTOM',
-        img: './img/attom-fit.svg',
-        link: '',
-        value: null,
-        active: true
-      },
-      rentcastEstimate: {
-        id: 10,
-        site_name: 'RentCast',
-        img: './img/rentcast-fit.svg',
-        link: '',
-        value: null,
-        active: true
-      }
-    },
+    estimates: getInitialEstimates(),
     isLoggedIn: false,
     user: {},
     isLoading: false,
@@ -121,7 +123,21 @@ export default class App extends Component {
     loading: false,
     error: null,
     searchPerformed: false,
+    searchResetToken: 0,
     sourceStatuses: []
+  };
+
+  resetSearch = () => {
+    this.setState(prevState => ({
+      foundHome: {},
+      estimates: getInitialEstimates(),
+      extraHomeData: {},
+      loading: false,
+      error: null,
+      searchPerformed: false,
+      searchResetToken: prevState.searchResetToken + 1,
+      sourceStatuses: []
+    }));
   };
 
   handleSearch = async (searchData) => {
@@ -301,8 +317,10 @@ export default class App extends Component {
       <NavContainer
         loggedin={this.state.isLoggedIn}
         search={this.getSearchResults}
+        onResetSearch={this.resetSearch}
+        searchResetToken={this.state.searchResetToken}
       />
-      <div className="flex-wrapper">
+      <div className={`flex-wrapper ${this.isEmpty(this.state.foundHome) ? 'empty-search-wrapper' : ''}`}>
         <Element name="search-results">
           {this.isEmpty(this.state.foundHome) ? (
             <EmptySearchContainer isLoading={this.state.isLoading}/>
@@ -313,6 +331,7 @@ export default class App extends Component {
               estimates={this.state.estimates}
               sourceStatuses={this.state.sourceStatuses}
               savePage={this.savePage}
+              onResetSearch={this.resetSearch}
             />
           )}
         </Element>
@@ -335,7 +354,7 @@ export default class App extends Component {
           <Route exact path="/about" element={
             <>
               <div className="header">
-                <NavMenu />
+                <NavMenu onResetSearch={this.resetSearch} />
               </div>
               <div className="flex-wrapper">
                 <AboutContent />
@@ -345,7 +364,7 @@ export default class App extends Component {
           } />
           <Route exact path="/contact" element={
             <>
-              <NavMenu />
+              <NavMenu onResetSearch={this.resetSearch} />
               <div className="flex-wrapper">
                 <ContactContent />
                 <Footer />
@@ -355,7 +374,7 @@ export default class App extends Component {
           <Route exact path="/sell-my-home" element={
             <>
               <div className="header">
-                <NavMenu />
+                <NavMenu onResetSearch={this.resetSearch} />
               </div>
               <div className="flex-wrapper">
                 <SellMyHomeContent />
@@ -367,6 +386,7 @@ export default class App extends Component {
             <>
               <LandingPageContainer
                 search={this.getSearchResults}
+                onResetSearch={this.resetSearch}
               />
               <LandingPageContent />
               <Footer />

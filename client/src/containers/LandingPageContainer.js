@@ -31,7 +31,7 @@ export default function LandingPageContainer(props) {
             <div className="logo">
               <Logo />
             </div>
-            <NavMenu />
+            <NavMenu onResetSearch={props.onResetSearch} />
             <div className="left-window">
               <h1 style={{ fontSize: 40, marginBottom: 0 }}>Get your free home value estimate</h1>
               <p style={{ fontSize: 15, marginTop: 0 }}>See figures from dozens of real estate websites, combined into one estimate. Click below to get started.</p>

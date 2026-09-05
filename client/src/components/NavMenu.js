@@ -4,14 +4,20 @@ import { Link } from 'react-router-dom';
 
 
 
-export default function NavMenu() {
+export default function NavMenu({ onResetSearch }) {
+    const handleNavigation = () => {
+        if (onResetSearch) {
+            onResetSearch();
+        }
+    };
+
     return (
         <ul className="main-menu">
-            <li><Link to='/'>HOME</Link></li>
+            <li><Link to='/' onClick={handleNavigation}>HOME</Link></li>
             {/* <li><Link to='/about'>ABOUT</Link></li> */}
-            <li><Link to='/learn-more'>LEARN MORE</Link></li>
+            <li><Link to='/learn-more' onClick={handleNavigation}>LEARN MORE</Link></li>
             {/* <li><Link to='/sell-my-home'>SELL MY HOME</Link></li> */}
-            <li><Link to='/contact'>CONTACT</Link></li>
+            <li><Link to='/contact' onClick={handleNavigation}>CONTACT</Link></li>
             {/* <li><UserLogin /></li> */}
         </ul>
     )
