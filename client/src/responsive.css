@@ -138,6 +138,10 @@ img {
         margin-bottom: 48px;
     }
 
+    .nav.nav-empty-search {
+        margin-bottom: 0;
+    }
+
     .logo-container {
         position: relative;
         left: auto;
@@ -313,6 +317,14 @@ img {
 }
 
 @media (max-width: 600px) {
+    html,
+    body,
+    #root,
+    .App {
+        max-width: 100%;
+        overflow-x: hidden;
+    }
+
     h1 {
         font-size: 26px;
     }
@@ -327,9 +339,9 @@ img {
     }
 
     .left-window {
-        width: min(320px, calc(100vw - 48px));
-        max-width: calc(100vw - 48px);
-        margin-left: 12px;
+        width: min(360px, calc(100vw - 32px));
+        max-width: calc(100vw - 32px);
+        margin-left: auto;
         margin-right: auto;
         margin-top: 24px;
         border-radius: 8px;
@@ -349,15 +361,33 @@ img {
         white-space: normal;
     }
 
+    .nav.nav-empty-search {
+        min-height: calc(100vh - 52px);
+        min-height: calc(100dvh - 52px);
+    }
+
     .search-bar-container {
-        width: min(320px, calc(100vw - 48px));
-        max-width: calc(100vw - 48px);
+        width: min(360px, calc(100vw - 32px));
+        max-width: calc(100vw - 32px);
+        margin-left: auto;
+        margin-right: auto;
         padding: 22px 12px;
     }
 
     .nav .MuiGrid-container {
-        justify-content: flex-start !important;
-        padding-left: 12px;
+        justify-content: center !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0;
+        padding-right: 0;
+        transform: translateX(calc((100vw - 100%) / 2));
+    }
+
+    .nav .MuiGrid-item {
+        display: flex;
+        justify-content: center;
+        width: 100%;
     }
 
     .search-bar-container h1 {
@@ -366,8 +396,11 @@ img {
 
     .search-bar-container h3,
     .home-intro-copy {
+        width: 100%;
         font-size: 15px;
         line-height: 1.4;
+        overflow-wrap: break-word;
+        white-space: normal;
     }
 
     .places-search {

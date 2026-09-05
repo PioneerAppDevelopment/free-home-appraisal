@@ -312,33 +312,38 @@ export default class App extends Component {
     return !obj || Object.keys(obj).length === 0;
   };
 
-  renderEstimateTool = () => (
-    <>
-      <NavContainer
-        loggedin={this.state.isLoggedIn}
-        search={this.getSearchResults}
-        onResetSearch={this.resetSearch}
-        searchResetToken={this.state.searchResetToken}
-      />
-      <div className={`flex-wrapper ${this.isEmpty(this.state.foundHome) ? 'empty-search-wrapper' : ''}`}>
-        <Element name="search-results">
-          {this.isEmpty(this.state.foundHome) ? (
-            <EmptySearchContainer isLoading={this.state.isLoading}/>
-          ) : (
-            <APIContainer
-              home={this.state.foundHome}
-              extraHomeData={this.state.extraHomeData}
-              estimates={this.state.estimates}
-              sourceStatuses={this.state.sourceStatuses}
-              savePage={this.savePage}
-              onResetSearch={this.resetSearch}
-            />
-          )}
-        </Element>
-        <Footer />
-      </div>
-    </>
-  );
+  renderEstimateTool = () => {
+    const hasResults = !this.isEmpty(this.state.foundHome);
+
+    return (
+      <>
+        <NavContainer
+          loggedin={this.state.isLoggedIn}
+          search={this.getSearchResults}
+          onResetSearch={this.resetSearch}
+          searchResetToken={this.state.searchResetToken}
+          hasResults={hasResults}
+        />
+        <div className={`flex-wrapper ${hasResults ? '' : 'empty-search-wrapper'}`}>
+          <Element name="search-results">
+            {hasResults ? (
+              <APIContainer
+                home={this.state.foundHome}
+                extraHomeData={this.state.extraHomeData}
+                estimates={this.state.estimates}
+                sourceStatuses={this.state.sourceStatuses}
+                savePage={this.savePage}
+                onResetSearch={this.resetSearch}
+              />
+            ) : (
+              <EmptySearchContainer isLoading={this.state.isLoading}/>
+            )}
+          </Element>
+          <Footer />
+        </div>
+      </>
+    );
+  };
 
   render() {
     return (

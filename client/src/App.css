@@ -76,7 +76,12 @@ p {
     margin-bottom: 80px;
 }
 
+.nav-empty-search {
+    margin-bottom: 0;
+}
+
 .left-window {
+    box-sizing: border-box;
     margin: 0 auto;
     width: 70%;
     max-width: 900px;
@@ -97,6 +102,7 @@ p {
 }
 
 .search-bar-container {
+    box-sizing: border-box;
     min-height: 260px;
     width: min(900px, calc(100vw - 32px));
     max-width: calc(100vw - 32px);

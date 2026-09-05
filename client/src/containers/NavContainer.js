@@ -8,9 +8,10 @@ import NewSearch from '../components/NewSearch';
 
 
 export default function NavContainer(props) {
+    const navClassName = props.hasResults ? 'nav nav-with-results' : 'nav nav-empty-search';
     
     return (
-        <div className="nav">
+        <div className={navClassName}>
             <div className="fade">
                 <div className="logo-container">
                     <Logo />
