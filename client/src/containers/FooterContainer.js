@@ -1,28 +1,9 @@
 import React from 'react';
-import LeftWidget from '../components/LeftWidget';
-import Logo from '../components/Logo';
-// import RightWidget from '../components/RightWidget';
 
 export default function FooterContainer() {
     return (
       <div>
-        <div className="footer">
-          <LeftWidget />
-          {/* <RightWidget /> */}
-        </div>
         <div className="footer-bar">
-          <div>
-        {/* <img
-            className="logo-bottom"
-            src="img/FreeHomeAppraisalLogo.png"
-            alt="FreeHomeAppraisal Logo"
-            style={{ width: 200 }}
-          /> */}
-          <Logo />
-          {/* <p style={{ color: "white", fontSize: 12 }}>
-            ©2020 FreeHomeAppraisal.com - All Rights Reserved.
-          </p> */}
-          </div>
           <div className="footer-nav">
             <p>HOME</p>
             {/* <p>ABOUT</p> */}

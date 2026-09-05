@@ -25,7 +25,7 @@ img {
 }
 
 .logo {
-    width: min(460px, 100%);
+    width: min(520px, 100%);
     max-height: 120px;
     object-fit: contain;
 }

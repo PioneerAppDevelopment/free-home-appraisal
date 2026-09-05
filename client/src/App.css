@@ -1,20 +1,19 @@
-@import url("https://fonts.googleapis.com/css2?family=Barlow&family=Montserrat&display=swap");
-
 html {
     scroll-behavior: smooth;
 }
 
 body {
     background-color: #fff !important;
+    font-family: Georgia, "Times New Roman", serif;
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Barlow', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
     color: rgb(61, 61, 61);
 }
 
 p {
-    font-family: 'Montserrat', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
     color: rgb(61, 61, 61);
 }
 
@@ -90,7 +89,7 @@ p {
 }
 
 .search-bar-container {
-    height: 200px;
+    min-height: 260px;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.9);
     border-radius: 10px;
@@ -101,6 +100,13 @@ p {
     padding: 40px;
 }
 
+.home-intro-copy {
+    max-width: 760px;
+    margin: 12px auto 0;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
 .search-bar-container h1 {
     line-height: 0;
     color: rgb(41, 41, 41);
@@ -108,7 +114,7 @@ p {
 
 .logo {
     display: block;
-    width: 420px;
+    width: 460px;
     max-width: calc(100vw - 40px);
     height: auto;
     padding: 10px 20px;
@@ -125,7 +131,7 @@ p {
 #title {
     padding: 100px 0 40px 0;
     color: white;
-    font-family: 'Barlow', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
     font-size: clamp(2rem, 3vw, 2.6rem);
     line-height: 1.2;
 }
@@ -277,12 +283,12 @@ p strong {
 .footer-bar {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     padding: 0 100px;
     padding-bottom: 20px;
     background-color: #222222;
-    font-family: 'Montserrat', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
 }
 
 .footer-nav {
@@ -293,7 +299,7 @@ p strong {
 .footer-nav p {
     color: white;
     font-weight: 400;
-    font-family: 'Barlow', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
     padding: 0 10px;
     font-size: 1.4em;
 }
@@ -316,7 +322,7 @@ p strong {
     width: 100vw;
     right: 20px;
     font-weight: 400;
-    font-family: 'Barlow', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
 }
 
 .main-menu li a {
@@ -332,7 +338,7 @@ p strong {
 
 .user-login {
     font-size: 1.3em;
-    font-family: 'Barlow', sans-serif;
+    font-family: Georgia, "Times New Roman", serif;
 }
 
 .landing-info {
@@ -373,7 +379,7 @@ p strong {
 }
 
 .section-4 {
-    background-color: salmon;
+    background-color: white;
 }
 
 .home-text-left {
