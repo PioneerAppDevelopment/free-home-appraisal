@@ -45,7 +45,7 @@ class Places extends Component {
                     ref={this.placesRef} 
                     type="search" 
                     id="address-input" 
-                    placeholder="Start typing your address"
+                    placeholder="Enter your address"
                 />
             </div>
         )
