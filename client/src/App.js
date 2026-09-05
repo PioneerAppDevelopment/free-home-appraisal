@@ -339,7 +339,7 @@ export default class App extends Component {
               <EmptySearchContainer isLoading={this.state.isLoading}/>
             )}
           </Element>
-          <Footer />
+          {hasResults && <Footer />}
         </div>
       </>
     );

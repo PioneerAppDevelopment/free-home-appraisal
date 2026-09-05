@@ -362,8 +362,8 @@ img {
     }
 
     .nav.nav-empty-search {
-        min-height: calc(100vh - 52px);
-        min-height: calc(100dvh - 52px);
+        min-height: 100vh;
+        min-height: 100dvh;
     }
 
     .search-bar-container {
