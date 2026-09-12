@@ -1,5 +1,6 @@
 const fs = require("fs");
 const { Pool } = require("pg");
+const { getQuotaUsage } = require("./lookupQuota");
 
 const lookupLimit = Number(process.env.FREE_LOOKUP_LIMIT_PER_MONTH || process.env.MAX_FREE_LOOKUPS_PER_MONTH || 0);
 let pool;
@@ -92,6 +93,14 @@ async function initializeUsageTracking() {
   `);
 
   await db.query(`
+    CREATE TABLE IF NOT EXISTS property_lookup_quota_resets (
+      ip_address INET NOT NULL,
+      lookup_month DATE NOT NULL,
+      reset_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      PRIMARY KEY (ip_address, lookup_month)
+    )
+  `);
+  await db.query(`
     CREATE TABLE IF NOT EXISTS page_visit_usage (
       id BIGSERIAL PRIMARY KEY,
       ip_address INET NOT NULL,
@@ -100,6 +109,8 @@ async function initializeUsageTracking() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )
   `);
+  await db.query(`ALTER TABLE page_visit_usage ADD COLUMN IF NOT EXISTS visitor_city TEXT`);
+  await db.query(`ALTER TABLE page_visit_usage ADD COLUMN IF NOT EXISTS visitor_state TEXT`);
 
   await db.query(`
     CREATE INDEX IF NOT EXISTS page_visit_usage_ip_month_idx
@@ -144,16 +155,16 @@ async function trackLookupUsage(ipAddress, query) {
   const usageResult = await db.query(
     `
       SELECT COUNT(*)::int AS used
-      FROM property_lookup_usage
-      WHERE ip_address = $1::inet
-        AND lookup_month = $2::date
-        AND allowed = TRUE
+      FROM property_lookup_usage usage
+      LEFT JOIN property_lookup_quota_resets resets ON resets.ip_address = usage.ip_address AND resets.lookup_month = usage.lookup_month
+      WHERE usage.ip_address = $1::inet AND usage.lookup_month = $2::date AND usage.allowed = TRUE
+        AND usage.created_at >= COALESCE(resets.reset_at, '-infinity'::timestamptz)
     `,
     [ipAddress, lookupMonth]
   );
 
-  const used = usageResult.rows[0].used;
-  const allowed = used < lookupLimit;
+  const quota = getQuotaUsage({ limit: lookupLimit, allowedLookupCount: usageResult.rows[0].used });
+  const allowed = !quota.overLimit;
 
   await db.query(
     `
@@ -167,13 +178,13 @@ async function trackLookupUsage(ipAddress, query) {
   return {
     allowed,
     limit: lookupLimit,
-    used: allowed ? used + 1 : used,
-    remaining: allowed ? Math.max(lookupLimit - used - 1, 0) : 0,
+    used: allowed ? quota.used + 1 : quota.used,
+    remaining: allowed ? Math.max(quota.remaining - 1, 0) : 0,
     trackingEnabled: true
   };
 }
 
-async function trackPageVisit(ipAddress, path) {
+async function trackPageVisit(ipAddress, path, location = {}) {
   if (!isTrackingEnabled()) {
     return { trackingEnabled: false };
   }
@@ -187,13 +198,20 @@ async function trackPageVisit(ipAddress, path) {
 
   await db.query(
     `
-      INSERT INTO page_visit_usage (ip_address, visit_month, path)
-      VALUES ($1::inet, $2::date, $3)
+      INSERT INTO page_visit_usage (ip_address, visit_month, path, visitor_city, visitor_state)
+      VALUES ($1::inet, $2::date, $3, $4, $5)
     `,
-    [ipAddress, currentLookupMonth(), path || "/"]
+    [ipAddress, currentLookupMonth(), path || "/", location.city || null, location.state || null]
   );
 
   return { trackingEnabled: true };
+}
+
+async function resetLookupQuota(ipAddress, month) {
+  const db = getPool();
+  if (!db) throw new Error("Database environment variables are missing.");
+  await initializeUsageTracking();
+  await db.query(`INSERT INTO property_lookup_quota_resets (ip_address, lookup_month, reset_at) VALUES ($1::inet, $2::date, NOW()) ON CONFLICT (ip_address, lookup_month) DO UPDATE SET reset_at = EXCLUDED.reset_at`, [ipAddress, `${month}-01`]);
 }
 
 async function getUsageDashboard(month) {
@@ -260,6 +278,8 @@ async function getUsageDashboard(month) {
             COUNT(*)::int AS page_visits,
             MAX(created_at) AS last_page_visit_at,
             (ARRAY_AGG(path ORDER BY created_at DESC))[1] AS last_page_path
+            ,(ARRAY_AGG(visitor_city ORDER BY created_at DESC))[1] AS visitor_city
+            ,(ARRAY_AGG(visitor_state ORDER BY created_at DESC))[1] AS visitor_state
           FROM page_visit_usage
           WHERE visit_month = $1::date
           GROUP BY ip_address
@@ -275,6 +295,7 @@ async function getUsageDashboard(month) {
           last_lookup_address,
           last_page_visit_at,
           last_page_path
+          ,visitor_city, visitor_state
         FROM lookup_by_ip
         FULL OUTER JOIN visits_by_ip
           ON lookup_by_ip.ip_address = visits_by_ip.ip_address
@@ -339,5 +360,6 @@ module.exports = {
   initializeUsageTracking,
   getUsageDashboard,
   trackLookupUsage,
-  trackPageVisit
+  trackPageVisit,
+  resetLookupQuota
 };

@@ -23,7 +23,7 @@ function validateContactMessage(body = {}) {
     return { error: "Contact message is too long." };
   }
 
-  return { name, email, message };
+  return { name, email, message, requestType: body.requestType === "more-searches" ? "more-searches" : null };
 }
 
 function mailgunConfig() {
@@ -38,7 +38,7 @@ function mailgunConfig() {
   };
 }
 
-async function sendContactMessage(body) {
+async function sendContactMessage(body, requesterIp) {
   const config = mailgunConfig();
 
   if (!config.apiKey) {
@@ -60,7 +60,8 @@ async function sendContactMessage(body) {
       `Name: ${contact.name}`,
       `Email: ${contact.email}`,
       "",
-      contact.message
+      contact.message,
+      ...(contact.requestType ? ["", "Request: More searches", `Requester IP: ${requesterIp || "Unknown"}`] : [])
     ].join("\n"),
     "h:Reply-To": contact.email
   });

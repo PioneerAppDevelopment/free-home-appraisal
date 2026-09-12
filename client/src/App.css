@@ -148,7 +148,7 @@ p {
 
 .logo {
     display: block;
-    width: 460px;
+    width: 690px;
     max-width: calc(100vw - 40px);
     height: auto;
     padding: 10px 20px;
@@ -343,12 +343,13 @@ p strong {
     flex-direction: row;
 }
 
-.footer-nav p {
+.footer-nav a {
     color: white;
     font-weight: 400;
     font-family: Georgia, "Times New Roman", serif;
     padding: 0 10px;
     font-size: 1.4em;
+    text-decoration: none;
 }
 
 .logo-bottom {

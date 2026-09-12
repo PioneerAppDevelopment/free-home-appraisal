@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const cors = require("cors");
-const { initializeUsageTracking, getUsageDashboard, trackLookupUsage, trackPageVisit } = require("./server/usageTracker");
+const { initializeUsageTracking, getUsageDashboard, trackLookupUsage, trackPageVisit, resetLookupQuota } = require("./server/usageTracker");
 const { sendContactMessage } = require("./server/contactMailer");
 
 require("dotenv").config();
@@ -657,10 +657,17 @@ app.get("/api/admin/usage", requireAdmin, async (req, res) => {
   }
 });
 
+app.post("/api/admin/usage/reset", requireAdmin, async (req, res) => {
+  const { ipAddress, month } = req.body || {};
+  if (!ipAddress || !month || !/^\d{4}-\d{2}$/.test(month)) return res.status(400).json({ error: "A valid IP address and month are required." });
+  try { await resetLookupQuota(ipAddress, month); res.status(204).end(); }
+  catch (error) { res.status(400).json({ error: "Quota reset could not be completed." }); }
+});
+
 app.post("/api/page-visit", async (req, res) => {
   try {
     const path = firstString(req.body && req.body.path) || "/";
-    await trackPageVisit(req.ip, path.slice(0, 500));
+    await trackPageVisit(req.ip, path.slice(0, 500), { city: req.get("CF-IPCity") || req.get("X-Appengine-City"), state: req.get("CF-Region") || req.get("X-Appengine-Region") });
     res.status(204).end();
   } catch (error) {
     console.error("Page visit tracking failed:", error.message);
@@ -670,7 +677,7 @@ app.post("/api/page-visit", async (req, res) => {
 
 app.post("/api/contact", async (req, res) => {
   try {
-    await sendContactMessage(req.body);
+    await sendContactMessage(req.body, req.ip);
     res.status(200).json({ sent: true });
   } catch (error) {
     const statusCode = error.statusCode || 502;
@@ -704,10 +711,7 @@ app.get("/api/estimate", async (req, res) => {
   }
 
   if (!usage.allowed) {
-    res.status(429).json({
-      error: "Monthly free lookup limit reached for this IP address.",
-      usage
-    });
+    res.status(429).json({ error: "You’ve reached the maximum number of free searches. If you would like more searches, please contact us and we will provide you with more.", usage, contactUrl: "/contact?request=more-searches" });
     return;
   }
 

@@ -1,15 +1,16 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function FooterContainer() {
     return (
       <div>
         <div className="footer-bar">
           <div className="footer-nav">
-            <p>HOME</p>
+            <Link to="/">HOME</Link>
             {/* <p>ABOUT</p> */}
-            <p>LEARN MORE</p>
+            <Link to="/learn-more">LEARN MORE</Link>
             {/* <p>SELL YOUR HOME</p> */}
-            <p>CONTACT</p>
+            <Link to="/contact">CONTACT</Link>
           </div>
         </div>
       </div>

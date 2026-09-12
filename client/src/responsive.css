@@ -330,7 +330,7 @@ img {
     }
 
     .logo {
-        width: min(230px, calc(100vw - 48px));
+        width: min(345px, calc(100vw - 48px));
         padding: 8px 12px;
     }
 

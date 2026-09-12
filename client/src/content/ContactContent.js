@@ -117,6 +117,7 @@ class ContactContent extends React.Component {
         name: this.state.name.value,
         email: this.state.email.value,
         message: this.state.message.value,
+        requestType: new URLSearchParams(window.location.search).get('request') === 'more-searches' ? 'more-searches' : undefined,
       });
 
       this.setState({
@@ -143,6 +144,7 @@ class ContactContent extends React.Component {
         </div>
         <Card>
           <h1>Send us a Message!</h1>
+          {new URLSearchParams(window.location.search).get('request') === 'more-searches' ? <p style={{padding: 20}}>Tell us about the additional searches you need. We’ll receive your request and IP address securely.</p> : null}
           <p style={{padding: 20}}>Please fill out the form below if you have any questions, issues, or suggestions.</p>
           <Form onSubmit={this.handleSubmit.bind(this)}>
             <TextInput

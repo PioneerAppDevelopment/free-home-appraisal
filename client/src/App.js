@@ -5,7 +5,7 @@ import 'typeface-roboto';
 import CssBaseline from '@mui/material/CssBaseline';
 import NavContainer from './containers/NavContainer';
 import Footer from './containers/FooterContainer';
-import { Route, Routes } from 'react-router-dom';
+import { Link, Route, Routes } from 'react-router-dom';
 import APIContainer from './containers/APIContainer';
 import EmptySearchContainer from './containers/EmptySearchContainer';
 import LandingPageContainer from './containers/LandingPageContainer';
@@ -214,7 +214,7 @@ export default class App extends Component {
       console.error('Error fetching estimates:', error);
       this.setState({ 
         loading: false,
-        error: 'Failed to fetch property estimates. Please try again.'
+        error: error.status === 429 ? error.message : 'Failed to fetch property estimates. Please try again.'
       });
     }
   }
@@ -324,6 +324,7 @@ export default class App extends Component {
           searchResetToken={this.state.searchResetToken}
           hasResults={hasResults}
         />
+        {this.state.error ? <div className="lookup-error">{this.state.error} {this.state.error.includes('maximum number') ? <Link to="/contact?request=more-searches">Contact Us Now</Link> : null}</div> : null}
         <div className={`flex-wrapper ${hasResults ? '' : 'empty-search-wrapper'}`}>
           <Element name="search-results">
             {hasResults ? (

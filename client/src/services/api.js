@@ -48,7 +48,9 @@ const PropertyService = {
 
     if (!response.ok) {
       const body = await response.json().catch(() => ({}));
-      throw new Error(body.error || `Estimate request failed with ${response.status}`);
+      const error = new Error(body.error || `Estimate request failed with ${response.status}`);
+      error.status = response.status;
+      throw error;
     }
 
     return response.json();

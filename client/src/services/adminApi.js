@@ -17,6 +17,10 @@ const AdminApi = {
     }
 
     return body;
+  },
+  resetUsage: async (ipAddress, month, token) => {
+    const response = await fetch(`${API_BASE_URL}/api/admin/usage/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(token ? { 'x-admin-token': token } : {}) }, body: JSON.stringify({ ipAddress, month }) });
+    if (!response.ok) throw new Error((await response.json().catch(() => ({}))).error || 'Quota reset failed.');
   }
 };
 

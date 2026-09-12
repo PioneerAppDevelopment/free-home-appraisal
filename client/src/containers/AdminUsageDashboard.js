@@ -38,6 +38,7 @@ export default function AdminUsageDashboard() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [resettingIp, setResettingIp] = useState('');
 
   const loadUsage = async () => {
     setLoading(true);
@@ -53,6 +54,13 @@ export default function AdminUsageDashboard() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const resetQuota = async ipAddress => {
+    setResettingIp(ipAddress); setError('');
+    try { await AdminApi.resetUsage(ipAddress, month, token); await loadUsage(); }
+    catch (err) { setError(err.message); }
+    finally { setResettingIp(''); }
   };
 
   useEffect(() => {
@@ -146,6 +154,7 @@ export default function AdminUsageDashboard() {
               <thead>
                 <tr>
                   <th>IP Address</th>
+                  <th>City / State</th>
                   <th>Page Visits</th>
                   <th>Allowed</th>
                   <th>Blocked</th>
@@ -155,14 +164,16 @@ export default function AdminUsageDashboard() {
                   <th>Last Page Visit</th>
                   <th>Last Lookup</th>
                   <th>Last Address</th>
+                  <th>Quota</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan="10">Loading usage data...</td></tr>
+                  <tr><td colSpan="12">Loading usage data...</td></tr>
                 ) : data?.byIp?.length ? data.byIp.map(row => (
                   <tr key={row.ip_address} className={row.over_limit ? 'is-over-limit' : ''}>
                     <td>{row.ip_address}</td>
+                    <td>{[row.visitor_city, row.visitor_state].filter(Boolean).join(', ') || 'Unknown'}</td>
                     <td>{formatNumber(row.page_visits)}</td>
                     <td>{formatNumber(row.allowed_lookups)}</td>
                     <td>{formatNumber(row.blocked_lookups)}</td>
@@ -172,9 +183,10 @@ export default function AdminUsageDashboard() {
                     <td>{formatDate(row.last_page_visit_at)}</td>
                     <td>{formatDate(row.last_lookup_at)}</td>
                     <td>{row.last_lookup_address || 'N/A'}</td>
+                    <td><button type="button" onClick={() => resetQuota(row.ip_address)} disabled={resettingIp === row.ip_address}>{resettingIp === row.ip_address ? 'Resetting…' : 'Reset quota'}</button></td>
                   </tr>
                 )) : (
-                  <tr><td colSpan="10">No usage has been recorded for this month.</td></tr>
+                  <tr><td colSpan="12">No usage has been recorded for this month.</td></tr>
                 )}
               </tbody>
             </table>
