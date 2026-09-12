@@ -256,21 +256,24 @@ async function getUsageDashboard(month) {
       `
         WITH lookup_by_ip AS (
           SELECT
-            ip_address,
+            usage.ip_address,
             COUNT(*)::int AS total_lookups,
-            COUNT(*) FILTER (WHERE allowed = TRUE)::int AS allowed_lookups,
-            COUNT(*) FILTER (WHERE allowed = FALSE)::int AS blocked_lookups,
-            MIN(created_at) AS first_lookup_at,
-            MAX(created_at) AS last_lookup_at,
+            COUNT(*) FILTER (WHERE usage.allowed = TRUE)::int AS allowed_lookups,
+            COUNT(*) FILTER (WHERE usage.allowed = FALSE)::int AS blocked_lookups,
+            COUNT(*) FILTER (WHERE usage.allowed = TRUE AND usage.created_at >= COALESCE(resets.reset_at, '-infinity'::timestamptz))::int AS active_allowed_lookups,
+            MIN(usage.created_at) AS first_lookup_at,
+            MAX(usage.created_at) AS last_lookup_at,
             (
               ARRAY_AGG(
                 TRIM(CONCAT_WS(', ', NULLIF(street, ''), NULLIF(city, ''), NULLIF(state, ''), NULLIF(zip, '')))
-                ORDER BY created_at DESC
+                ORDER BY usage.created_at DESC
               )
             )[1] AS last_lookup_address
-          FROM property_lookup_usage
-          WHERE lookup_month = $1::date
-          GROUP BY ip_address
+          FROM property_lookup_usage usage
+          LEFT JOIN property_lookup_quota_resets resets
+            ON resets.ip_address = usage.ip_address AND resets.lookup_month = usage.lookup_month
+          WHERE usage.lookup_month = $1::date
+          GROUP BY usage.ip_address, resets.reset_at
         ),
         visits_by_ip AS (
           SELECT
@@ -289,6 +292,7 @@ async function getUsageDashboard(month) {
           COALESCE(total_lookups, 0)::int AS total_lookups,
           COALESCE(allowed_lookups, 0)::int AS allowed_lookups,
           COALESCE(blocked_lookups, 0)::int AS blocked_lookups,
+          COALESCE(active_allowed_lookups, 0)::int AS active_allowed_lookups,
           COALESCE(page_visits, 0)::int AS page_visits,
           first_lookup_at,
           last_lookup_at,
@@ -342,8 +346,8 @@ async function getUsageDashboard(month) {
   const summary = summaryResult.rows[0];
   const ipRows = byIpResult.rows.map(row => ({
     ...row,
-    remaining: lookupLimit > 0 ? Math.max(lookupLimit - row.allowed_lookups, 0) : null,
-    over_limit: lookupLimit > 0 && row.allowed_lookups >= lookupLimit
+    remaining: lookupLimit > 0 ? getQuotaUsage({ limit: lookupLimit, allowedLookupCount: row.active_allowed_lookups }).remaining : null,
+    over_limit: lookupLimit > 0 && getQuotaUsage({ limit: lookupLimit, allowedLookupCount: row.active_allowed_lookups }).overLimit
   }));
 
   return {
