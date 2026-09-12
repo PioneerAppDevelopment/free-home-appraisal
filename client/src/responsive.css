@@ -127,7 +127,15 @@ img {
 }
 
 @media (max-width: 900px) {
-    .hero-header {
+  .hero-header-content {
+    padding-top: 0;
+  }
+
+  .hero-header .left-window {
+    margin-top: 32px;
+  }
+
+  .hero-header {
         min-height: 640px;
         height: auto;
     }

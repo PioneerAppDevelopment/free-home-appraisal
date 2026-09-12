@@ -26,14 +26,14 @@ export default function LandingPageContainer(props) {
       <div className="main">
         <div className="hero-header">
           <div className="hero-overlay">
-          <div className="fade">
-            <NavMenu onResetSearch={props.onResetSearch} />
-            <div className="left-window">
-              <h1 style={{ fontSize: 40, marginBottom: 0 }}>Get your free home value estimate</h1>
-              <p style={{ fontSize: 15, marginTop: 0 }}>See figures from dozens of real estate websites, combined into one estimate. Click below to get started.</p>
+            <div className="fade hero-header-content">
+              <NavMenu onResetSearch={props.onResetSearch} />
+              <div className="left-window">
+                <h1 style={{ fontSize: 40, marginBottom: 0 }}>Get your free home value estimate</h1>
+                <p style={{ fontSize: 15, marginTop: 0 }}>See figures from dozens of real estate websites, combined into one estimate. Click below to get started.</p>
                 <div><CTAButton variant="contained" color="primary" href="/">GET YOUR FREE ESTIMATE NOW</CTAButton></div>
+              </div>
             </div>
-          </div>
           </div>
         </div>
         <div className="shapes-container">

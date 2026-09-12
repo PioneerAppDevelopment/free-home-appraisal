@@ -91,3 +91,18 @@ test('keeps the Learn More logo in the shared header position', () => {
 
   expect(screen.getByAltText('FreeHomeAppraisal.com Logo').closest('.logo-container')).not.toBeNull();
 });
+
+test('keeps Learn More hero content below the shared navigation area', () => {
+  const { container } = render(
+    <MemoryRouter initialEntries={['/learn-more']}>
+      <App />
+    </MemoryRouter>
+  );
+
+  const heroContent = container.querySelector('.hero-header-content');
+
+  expect(heroContent).not.toBeNull();
+  expect(heroContent.querySelector('.logo-container')).not.toBeNull();
+  expect(heroContent.querySelector('.main-menu')).not.toBeNull();
+  expect(heroContent.querySelector('.left-window')).not.toBeNull();
+});
