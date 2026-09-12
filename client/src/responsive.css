@@ -25,8 +25,8 @@ img {
 }
 
 .logo {
-    width: min(520px, 100%);
-    max-height: 120px;
+    width: min(690px, calc(100vw - 40px));
+    max-height: none;
     object-fit: contain;
 }
 

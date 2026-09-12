@@ -81,3 +81,13 @@ test('clears estimate results when returning home from navigation', () => {
   expect(screen.queryByText(/195 San Juan Dr/i)).not.toBeInTheDocument();
   expect(screen.getByText(/get a free home value estimate/i)).toBeInTheDocument();
 });
+
+test('keeps the Learn More logo in the shared header position', () => {
+  render(
+    <MemoryRouter initialEntries={['/learn-more']}>
+      <App />
+    </MemoryRouter>
+  );
+
+  expect(screen.getByAltText('FreeHomeAppraisal.com Logo').closest('.logo-container')).not.toBeNull();
+});

@@ -28,7 +28,7 @@ export default function LandingPageContainer(props) {
         <div className="hero-header">
           <div className="hero-overlay">
           <div className="fade">
-            <div className="logo">
+            <div className="logo-container">
               <Logo />
             </div>
             <NavMenu onResetSearch={props.onResetSearch} />
