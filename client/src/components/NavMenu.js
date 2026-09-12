@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import Logo from './Logo';
 // import UserLogin from "../components/UserLogin";
 
 
@@ -11,7 +12,8 @@ export default function NavMenu({ onResetSearch }) {
         }
     };
 
-    return (
+    return (<>
+        <div className="logo-container"><Logo /></div>
         <ul className="main-menu">
             <li><Link to='/' onClick={handleNavigation}>HOME</Link></li>
             {/* <li><Link to='/about'>ABOUT</Link></li> */}
@@ -20,5 +22,5 @@ export default function NavMenu({ onResetSearch }) {
             <li><Link to='/contact' onClick={handleNavigation}>CONTACT</Link></li>
             {/* <li><UserLogin /></li> */}
         </ul>
-    )
+    </>)
 }

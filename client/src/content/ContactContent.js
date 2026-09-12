@@ -1,6 +1,5 @@
 import React from 'react';
 import '../contactform.scss';
-import Logo from '../components/Logo';
 import ContactApi from '../services/contactApi';
 
 /** Components */
@@ -139,9 +138,6 @@ class ContactContent extends React.Component {
     const { name, email, message, isSubmitting, submitStatus, submitError } = this.state;
     return (
       <div className="contact-form-container">
-        <div className="logo-container">
-          <Logo />
-        </div>
         <Card>
           <h1>Send us a Message!</h1>
           {new URLSearchParams(window.location.search).get('request') === 'more-searches' ? <p style={{padding: 20}}>Tell us about the additional searches you need. We’ll receive your request and IP address securely.</p> : null}

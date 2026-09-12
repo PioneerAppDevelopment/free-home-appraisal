@@ -25,8 +25,8 @@ img {
 }
 
 .logo {
-    width: min(690px, calc(100vw - 40px));
-    max-height: none;
+    width: min(520px, 100%);
+    max-height: 120px;
     object-fit: contain;
 }
 
@@ -330,7 +330,7 @@ img {
     }
 
     .logo {
-        width: min(345px, calc(100vw - 48px));
+        width: min(230px, calc(100vw - 48px));
         padding: 8px 12px;
     }
 

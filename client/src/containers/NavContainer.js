@@ -2,7 +2,6 @@ import React from 'react';
 import Title from '../components/Title';
 // import SearchBar from '../components/SearchBar';
 import { Grid } from '@mui/material';
-import Logo from '../components/Logo';
 import NavMenu from '../components/NavMenu';
 import NewSearch from '../components/NewSearch';
 
@@ -13,9 +12,6 @@ export default function NavContainer(props) {
     return (
         <div className={navClassName}>
             <div className="fade">
-                <div className="logo-container">
-                    <Logo />
-                </div>
                 <NavMenu onResetSearch={props.onResetSearch} />
                 <Title />
                 <Grid container direction="row" justifyContent="center" alignItems="center">

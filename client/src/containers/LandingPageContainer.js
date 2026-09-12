@@ -1,6 +1,5 @@
 import React from 'react';
 import NavMenu from '../components/NavMenu';
-import Logo from '../components/Logo';
 import Button from '@mui/material/Button';
 import { styled } from '@mui/material/styles';
 
@@ -28,9 +27,6 @@ export default function LandingPageContainer(props) {
         <div className="hero-header">
           <div className="hero-overlay">
           <div className="fade">
-            <div className="logo-container">
-              <Logo />
-            </div>
             <NavMenu onResetSearch={props.onResetSearch} />
             <div className="left-window">
               <h1 style={{ fontSize: 40, marginBottom: 0 }}>Get your free home value estimate</h1>
