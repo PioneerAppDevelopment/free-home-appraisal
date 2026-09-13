@@ -57,6 +57,10 @@ class Places extends Component {
         }
 
         event.preventDefault();
+        this.submitAddress();
+    }
+
+    submitAddress = () => {
         const address = this.placesRef.current?.value?.trim();
 
         if (!address) {
@@ -80,6 +84,9 @@ class Places extends Component {
                     placeholder="Enter your address"
                     onKeyDown={this.handleKeyDown}
                 />
+                <button className="address-search-button" type="button" onClick={this.submitAddress}>
+                    Search
+                </button>
             </div>
         )
     }

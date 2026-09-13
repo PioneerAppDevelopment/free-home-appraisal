@@ -1,6 +1,6 @@
 import React from 'react';
 import { act } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import App from './App';
 
@@ -120,4 +120,23 @@ test('renders the Contact form inside the shared Home-page hero', () => {
   expect(contactHero.querySelector('.logo-container')).not.toBeNull();
   expect(contactHero.querySelector('.main-menu')).not.toBeNull();
   expect(contactHero.querySelector('.contact-form-card')).not.toBeNull();
+});
+
+test('shows a dismissible dialog when the free-search quota is reached', async () => {
+  const appRef = React.createRef();
+  render(
+    <MemoryRouter initialEntries={['/']}>
+      <App ref={appRef} />
+    </MemoryRouter>
+  );
+
+  act(() => {
+    appRef.current.setState({ error: 'You’ve reached the maximum number of free searches.' });
+  });
+
+  expect(screen.getByRole('dialog')).toHaveTextContent('You’ve reached the maximum number of free searches.');
+  expect(screen.getByRole('link', { name: 'Contact Us Now' })).toHaveAttribute('href', '/contact?request=more-searches');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Close quota message' }));
+  await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
 });

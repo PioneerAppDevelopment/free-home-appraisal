@@ -3,6 +3,13 @@ import './App.css';
 import './responsive.css';
 import 'typeface-roboto';
 import CssBaseline from '@mui/material/CssBaseline';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
 import NavContainer from './containers/NavContainer';
 import Footer from './containers/FooterContainer';
 import { Link, Route, Routes } from 'react-router-dom';
@@ -24,6 +31,8 @@ import AdminUsageDashboard from './containers/AdminUsageDashboard';
 import EstimateLoading from './components/EstimateLoading';
 import PageVisitTracker from './components/PageVisitTracker';
 import { buildSourceStatuses } from './utils/estimateSources';
+
+const QUOTA_LIMIT_MESSAGE = 'You’ve reached the maximum number of free searches. If you would like more searches, please contact us and we will provide you with more.';
 
 const getInitialEstimates = () => ({
   zillowEstimate: {
@@ -124,7 +133,8 @@ export default class App extends Component {
     error: null,
     searchPerformed: false,
     searchResetToken: 0,
-    sourceStatuses: []
+    sourceStatuses: [],
+    quotaModalDismissed: false
   };
 
   resetSearch = () => {
@@ -134,6 +144,7 @@ export default class App extends Component {
       extraHomeData: {},
       loading: false,
       error: null,
+      quotaModalDismissed: false,
       searchPerformed: false,
       searchResetToken: prevState.searchResetToken + 1,
       sourceStatuses: []
@@ -141,7 +152,7 @@ export default class App extends Component {
   };
 
   handleSearch = async (searchData) => {
-    this.setState({ loading: true, sourceStatuses: [] });
+    this.setState({ loading: true, sourceStatuses: [], quotaModalDismissed: false });
     try {
       const [street, city, state, zip] = this.parseAddress(searchData.address);
       const estimates = await PropertyService.getEstimates(street, city, state, zip);
@@ -304,6 +315,14 @@ export default class App extends Component {
     this.handleSearch(queryObj);
   };
 
+  dismissQuotaModal = () => {
+    this.setState({ quotaModalDismissed: true });
+  };
+
+  hasReachedQuotaLimit = () => {
+    return Boolean(this.state.error?.includes('maximum number'));
+  };
+
   handleChange = e => {
     console.log(e.target.value);
   };
@@ -314,6 +333,7 @@ export default class App extends Component {
 
   renderEstimateTool = () => {
     const hasResults = !this.isEmpty(this.state.foundHome);
+    const showQuotaModal = this.hasReachedQuotaLimit() && !this.state.quotaModalDismissed;
 
     return (
       <>
@@ -324,7 +344,23 @@ export default class App extends Component {
           searchResetToken={this.state.searchResetToken}
           hasResults={hasResults}
         />
-        {this.state.error ? <div className="lookup-error">{this.state.error} {this.state.error.includes('maximum number') ? <Link to="/contact?request=more-searches">Contact Us Now</Link> : null}</div> : null}
+        {this.state.error && !this.hasReachedQuotaLimit() ? <div className="lookup-error">{this.state.error}</div> : null}
+        <Dialog open={showQuotaModal} onClose={this.dismissQuotaModal} aria-labelledby="quota-limit-title">
+          <DialogTitle id="quota-limit-title">
+            Free search limit reached
+            <IconButton aria-label="Close quota message" onClick={this.dismissQuotaModal} sx={{ position: 'absolute', right: 8, top: 8 }}>
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <p>{QUOTA_LIMIT_MESSAGE}</p>
+          </DialogContent>
+          <DialogActions>
+            <Button component={Link} to="/contact?request=more-searches" variant="contained" onClick={this.dismissQuotaModal}>
+              Contact Us Now
+            </Button>
+          </DialogActions>
+        </Dialog>
         <div className={`flex-wrapper ${hasResults ? '' : 'empty-search-wrapper'}`}>
           <Element name="search-results">
             {hasResults ? (
