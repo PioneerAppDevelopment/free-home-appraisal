@@ -92,6 +92,13 @@ p {
     margin-bottom: 0;
 }
 
+.contact-page-content {
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-top: 153px;
+}
+
 .left-window {
     box-sizing: border-box;
     margin: 0 auto;

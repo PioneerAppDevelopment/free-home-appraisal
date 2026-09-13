@@ -370,11 +370,13 @@ export default class App extends Component {
           } />
           <Route exact path="/contact" element={
             <>
-              <NavMenu onResetSearch={this.resetSearch} />
-              <div className="flex-wrapper">
-                <ContactContent />
-                <Footer />
+              <div className="nav nav-empty-search contact-page-hero">
+                <div className="fade contact-page-content">
+                  <NavMenu onResetSearch={this.resetSearch} />
+                  <ContactContent />
+                </div>
               </div>
+              <Footer />
             </>
           } />
           <Route exact path="/sell-my-home" element={

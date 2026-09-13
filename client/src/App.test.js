@@ -106,3 +106,18 @@ test('keeps Learn More hero content below the shared navigation area', () => {
   expect(heroContent.querySelector('.main-menu')).not.toBeNull();
   expect(heroContent.querySelector('.left-window')).not.toBeNull();
 });
+
+test('renders the Contact form inside the shared Home-page hero', () => {
+  const { container } = render(
+    <MemoryRouter initialEntries={['/contact']}>
+      <App />
+    </MemoryRouter>
+  );
+
+  const contactHero = container.querySelector('.contact-page-hero');
+
+  expect(contactHero).not.toBeNull();
+  expect(contactHero.querySelector('.logo-container')).not.toBeNull();
+  expect(contactHero.querySelector('.main-menu')).not.toBeNull();
+  expect(contactHero.querySelector('.contact-form-card')).not.toBeNull();
+});
